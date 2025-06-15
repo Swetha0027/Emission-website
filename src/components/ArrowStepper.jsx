@@ -1,84 +1,483 @@
-import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import React, { useState } from "react";
 
-const steps = ['Input Data', 'Analysis', 'Results'];
+export default function ArrowStepper() {
+  const [activeStep, setActiveStep] = useState(-1);
+  const steps = ["Input Data", "Analysis", "Results"];
 
-// Determine step status
-const getStatus = (currentIndex, index) => {
-  if (index < currentIndex) return 'completed';
-  if (index === currentIndex) return 'active';
-  return 'default';
-};
+  const handleStart = () => {
+    setActiveStep(0);
+  };
 
-// Set colors based on status
-const getColors = (status) => {
-  switch (status) {
-    case 'completed':
-      return { stroke: '#4caf50', fill: '#ffffff', text: '#4caf50' };
-    case 'active':
-      return { stroke: '#1976d2', fill: '#e3f2fd', text: '#1976d2' };
-    default:
-      return { stroke: '#ccc', fill: '#f9f9f9', text: '#888' };
+  const handleNext = () => {
+    if (activeStep < steps.length - 1) {
+      setActiveStep(activeStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (activeStep > 0) {
+      setActiveStep(activeStep - 1);
+    }
+  };
+
+  const getStepStyle = (index) => {
+    const isActive = index === activeStep;
+    const isCompleted = index < activeStep;
+
+    let baseClasses =
+      "relative flex items-center justify-center px-8 py-3 text-sm font-medium transition-all duration-200 ";
+
+    if (index === 0) {
+      // First step - arrow pointing right
+      baseClasses += "clip-path-first ";
+    } else if (index === steps.length - 1) {
+      // Last step - arrow pointing left
+      baseClasses += "clip-path-last ";
+    } else {
+      // Middle steps - arrows on both sides
+      baseClasses += "clip-path-middle ";
+    }
+
+    if (isActive) {
+      baseClasses += "bg-[#10b981] text-white z-20";
+    } else if (isCompleted) {
+      baseClasses += "bg-white text-green-700 z-10";
+    } else {
+      baseClasses += "bg-white text-gray-600 z-0";
+    }
+
+    return baseClasses;
+  };
+
+  if (activeStep === -1) {
+    return (
+      <div style={{ minHeight: "calc(100vh - 155px)" }}>
+        <div className="flex justify-center items-center  mt-4 gap-4">
+          <style jsx>{`
+            :root {
+              --arrow: 20px;
+              --border-width: 4px;
+            }
+
+            .clip-path-first {
+              clip-path: polygon(
+                0 0,
+                calc(100% - var(--arrow)) 0,
+                100% 50%,
+                calc(100% - var(--arrow)) 100%,
+                0 100%
+              );
+              margin-right: calc(-1 * var(--arrow));
+            }
+
+            .clip-path-first::before {
+              content: "";
+              position: absolute;
+              top: calc(-1 * var(--border-width));
+              left: calc(-1 * var(--border-width));
+              right: calc(-1 * var(--border-width));
+              bottom: calc(-1 * var(--border-width));
+              background: #10b981;
+              clip-path: polygon(
+                0 0,
+                calc(100% - var(--arrow)) 0,
+                100% 50%,
+                calc(100% - var(--arrow)) 100%,
+                0 100%
+              );
+              z-index: -2;
+            }
+
+            .clip-path-first::after {
+              content: "";
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: inherit;
+              clip-path: polygon(
+                calc(var(--border-width)) calc(var(--border-width)),
+                calc(100% - var(--arrow) - var(--border-width))
+                  calc(var(--border-width)),
+                calc(100% - var(--border-width)) 50%,
+                calc(100% - var(--arrow) - var(--border-width))
+                  calc(100% - var(--border-width)),
+                calc(var(--border-width)) calc(100% - var(--border-width))
+              );
+              z-index: -1;
+            }
+
+            .clip-path-middle {
+              clip-path: polygon(
+                0% 0%,
+                calc(100% - var(--arrow)) 0%,
+                100% 50%,
+                calc(100% - var(--arrow)) 100%,
+                0% 100%,
+                var(--arrow) 50%
+              );
+              margin-right: calc(-1 * var(--arrow));
+            }
+
+            .clip-path-middle::before {
+              content: "";
+              position: absolute;
+              top: calc(-1 * var(--border-width));
+              left: calc(-1 * var(--border-width));
+              right: calc(-1 * var(--border-width));
+              bottom: calc(-1 * var(--border-width));
+              background: #10b981;
+              clip-path: polygon(
+                0% 0%,
+                calc(100% - var(--arrow)) 0%,
+                100% 50%,
+                calc(100% - var(--arrow)) 100%,
+                0% 100%,
+                var(--arrow) 50%
+              );
+              z-index: -2;
+            }
+
+            .clip-path-middle::after {
+              content: "";
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: inherit;
+              clip-path: polygon(
+                calc(var(--border-width)) calc(var(--border-width)),
+                calc(100% - var(--arrow) - var(--border-width))
+                  calc(var(--border-width)),
+                calc(100% - var(--border-width)) 50%,
+                calc(100% - var(--arrow) - var(--border-width))
+                  calc(100% - var(--border-width)),
+                calc(var(--border-width)) calc(100% - var(--border-width)),
+                calc(var(--arrow) + var(--border-width)) 50%
+              );
+              z-index: -1;
+            }
+
+            .clip-path-last {
+              clip-path: polygon(
+                0% 0%,
+                100% 0%,
+                100% 100%,
+                0% 100%,
+                var(--arrow) 50%
+              );
+            }
+
+            .clip-path-last::before {
+              content: "";
+              position: absolute;
+              top: calc(-1 * var(--border-width));
+              left: calc(-1 * var(--border-width));
+              right: calc(-1 * var(--border-width));
+              bottom: calc(-1 * var(--border-width));
+              background: #10b981;
+              clip-path: polygon(
+                0% 0%,
+                100% 0%,
+                100% 100%,
+                0% 100%,
+                var(--arrow) 50%
+              );
+              z-index: -2;
+            }
+
+            .clip-path-last::after {
+              content: "";
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: inherit;
+              clip-path: polygon(
+                calc(var(--border-width)) calc(var(--border-width)),
+                calc(100% - var(--border-width)) calc(var(--border-width)),
+                calc(100% - var(--border-width))
+                  calc(100% - var(--border-width)),
+                calc(var(--border-width)) calc(100% - var(--border-width)),
+                calc(var(--arrow) + var(--border-width)) 50%
+              );
+              z-index: -1;
+            }
+
+            /* Ensure text is above the pseudo-element */
+            .clip-path-first span,
+            .clip-path-middle span,
+            .clip-path-last span {
+              position: relative;
+              z-index: 1;
+            }
+          `}</style>
+          <div className="flex items-center gap-4">
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className={getStepStyle(index) + " min-w-[180px]"}
+              >
+                <span className="relative z-10">{step}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={handleStart}
+            className="px-8 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
+          >
+            Start
+          </button>
+        </div>
+      </div>
+    );
   }
-};
-
-// SVG path for step shape
-const getPath = (index, total) => {
-  const width = 188;
-  const height = 25;
-  const arrowWidth = 20;
-
-  const isFirst = index === 0;
-  const isLast = index === total - 1;
-
-  if (isFirst) {
-    return `M0,0 H${width - arrowWidth} L${width},${height / 2} L${width - arrowWidth},${height} H0 Z`;
-  } else if (isLast) {
-    return `M0,0 H${width} V${height} H0 L${arrowWidth},${height / 2} Z`;
-  } else {
-    return `M0,0 H${width - arrowWidth} L${width},${height / 2} L${width - arrowWidth},${height} H0 L${arrowWidth},${height / 2} Z`;
-  }
-};
-
-const ArrowStepper = () => {
-  const [activeStep, setActiveStep] = useState(0);
-
-  const height = 25;
-  const width = 188;
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" gap={1} mt={2}>
-      {steps.map((label, index) => {
-        const status = getStatus(activeStep, index);
-        const { stroke, fill, text } = getColors(status);
-        const path = getPath(index, steps.length);
+    <div
+      className="flex flex-col items-center gap-8 p-6"
+      style={{ minHeight: "calc(100vh - 155px)" }}
+    >
+      {/* Custom CSS for clip paths with proper borders */}
+      <style jsx>{`
+        :root {
+          --arrow: 20px;
+          --border-width: 4px;
+        }
 
-        return (
-          <svg
-            key={index}
-            width={width}
-            height={height}
-            viewBox={`0 0 ${width} ${height}`}
-            style={{ flexShrink: 0, cursor: 'pointer' }}
-            onClick={() => setActiveStep(index)}
+        .clip-path-first {
+          clip-path: polygon(
+            0 0,
+            calc(100% - var(--arrow)) 0,
+            100% 50%,
+            calc(100% - var(--arrow)) 100%,
+            0 100%
+          );
+          margin-right: calc(-1 * var(--arrow));
+        }
+
+        .clip-path-first::before {
+          content: "";
+          position: absolute;
+          top: calc(-1 * var(--border-width));
+          left: calc(-1 * var(--border-width));
+          right: calc(-1 * var(--border-width));
+          bottom: calc(-1 * var(--border-width));
+          background: #10b981;
+          clip-path: polygon(
+            0 0,
+            calc(100% - var(--arrow)) 0,
+            100% 50%,
+            calc(100% - var(--arrow)) 100%,
+            0 100%
+          );
+          z-index: -2;
+        }
+
+        .clip-path-first::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: inherit;
+          clip-path: polygon(
+            calc(var(--border-width)) calc(var(--border-width)),
+            calc(100% - var(--arrow) - var(--border-width))
+              calc(var(--border-width)),
+            calc(100% - var(--border-width)) 50%,
+            calc(100% - var(--arrow) - var(--border-width))
+              calc(100% - var(--border-width)),
+            calc(var(--border-width)) calc(100% - var(--border-width))
+          );
+          z-index: -1;
+        }
+
+        .clip-path-middle {
+          clip-path: polygon(
+            0% 0%,
+            calc(100% - var(--arrow)) 0%,
+            100% 50%,
+            calc(100% - var(--arrow)) 100%,
+            0% 100%,
+            var(--arrow) 50%
+          );
+          margin-right: calc(-1 * var(--arrow));
+        }
+
+        .clip-path-middle::before {
+          content: "";
+          position: absolute;
+          top: calc(-1 * var(--border-width));
+          left: calc(-1 * var(--border-width));
+          right: calc(-1 * var(--border-width));
+          bottom: calc(-1 * var(--border-width));
+          background: #10b981;
+          clip-path: polygon(
+            0% 0%,
+            calc(100% - var(--arrow)) 0%,
+            100% 50%,
+            calc(100% - var(--arrow)) 100%,
+            0% 100%,
+            var(--arrow) 50%
+          );
+          z-index: -2;
+        }
+
+        .clip-path-middle::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: inherit;
+          clip-path: polygon(
+            calc(var(--border-width)) calc(var(--border-width)),
+            calc(100% - var(--arrow) - var(--border-width))
+              calc(var(--border-width)),
+            calc(100% - var(--border-width)) 50%,
+            calc(100% - var(--arrow) - var(--border-width))
+              calc(100% - var(--border-width)),
+            calc(var(--border-width)) calc(100% - var(--border-width)),
+            calc(var(--arrow) + var(--border-width)) 50%
+          );
+          z-index: -1;
+        }
+
+        .clip-path-last {
+          clip-path: polygon(
+            0% 0%,
+            100% 0%,
+            100% 100%,
+            0% 100%,
+            var(--arrow) 50%
+          );
+        }
+
+        .clip-path-last::before {
+          content: "";
+          position: absolute;
+          top: calc(-1 * var(--border-width));
+          left: calc(-1 * var(--border-width));
+          right: calc(-1 * var(--border-width));
+          bottom: calc(-1 * var(--border-width));
+          background: #10b981;
+          clip-path: polygon(
+            0% 0%,
+            100% 0%,
+            100% 100%,
+            0% 100%,
+            var(--arrow) 50%
+          );
+          z-index: -2;
+        }
+
+        .clip-path-last::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: inherit;
+          clip-path: polygon(
+            calc(var(--border-width)) calc(var(--border-width)),
+            calc(100% - var(--border-width)) calc(var(--border-width)),
+            calc(100% - var(--border-width)) calc(100% - var(--border-width)),
+            calc(var(--border-width)) calc(100% - var(--border-width)),
+            calc(var(--arrow) + var(--border-width)) 50%
+          );
+          z-index: -1;
+        }
+
+        /* Ensure text is above the pseudo-element */
+        .clip-path-first span,
+        .clip-path-middle span,
+        .clip-path-last span {
+          position: relative;
+          z-index: 1;
+        }
+      `}</style>
+
+      {/* Stepper */}
+      <div className="flex items-center gap-4">
+        {steps.map((step, index) => (
+          <div key={step} className={getStepStyle(index) + " min-w-[180px]"}>
+            <span className="relative z-10">{step}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Step Content */}
+      <div className="w-full max-w-md bg-white rounded-lg border-2 border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          {steps[activeStep]}
+        </h3>
+
+        {activeStep === 0 && (
+          <div>
+            <p className="text-gray-600 mb-4">Please enter your data here.</p>
+            <textarea
+              className="w-full p-3 border border-gray-300 rounded-md resize-none"
+              rows="4"
+              placeholder="Enter your input data..."
+            />
+          </div>
+        )}
+
+        {activeStep === 1 && (
+          <div>
+            <p className="text-gray-600 mb-4">Analysis is in progress...</p>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-green-500 h-2 rounded-full w-3/4 transition-all duration-300"></div>
+            </div>
+          </div>
+        )}
+
+        {activeStep === 2 && (
+          <div>
+            <p className="text-gray-600 mb-4">Here are your results:</p>
+            <div className="bg-green-50 border border-green-200 rounded-md p-4">
+              <p className="text-green-800">Analysis completed successfully!</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="flex gap-4">
+        {activeStep > 0 && (
+          <button
+            onClick={handleBack}
+            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
           >
-            <path d={path} fill={fill} stroke={stroke} strokeWidth="2" />
-            <text
-              x="50%"
-              y="50%"
-              dominantBaseline="middle"
-              textAnchor="middle"
-              fill={text}
-              fontWeight="bold"
-              fontSize="10"
-            >
-              {label}
-            </text>
-          </svg>
-        );
-      })}
-    </Box>
-  );
-};
+            Back
+          </button>
+        )}
 
-export default ArrowStepper;
+        {activeStep < steps.length - 1 && (
+          <button
+            onClick={handleNext}
+            className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+          >
+            {activeStep === steps.length - 2 ? "Finish" : "Next"}
+          </button>
+        )}
+
+        {activeStep === steps.length - 1 && (
+          <button
+            onClick={() => setActiveStep(-1)}
+            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
