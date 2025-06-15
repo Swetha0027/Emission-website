@@ -1,16 +1,17 @@
-import React from 'react';
 import Header from './components/Header';
-import ProgressBar from './components/ProgressBar';
-import Notifications from './components/Notifications';
 import Content from './components/Content';
 import Footer from './components/Footer';
+import ArrowStepper from './components/ArrowStepper';
 
 const App = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col ">
       <Header />
-      <ProgressBar />
-      <Content />
+      <div className="">
+        <ArrowStepper />
+        <Content />
+      </div>
+      
       <Footer />
     </div>
   );
