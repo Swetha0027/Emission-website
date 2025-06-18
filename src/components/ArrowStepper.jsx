@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import VehicleClassification from "./VehicleClassification";
+import VerticalStepper from './VerticalStepper';
 
 export default function ArrowStepper() {
   const [activeStep, setActiveStep] = useState(-1);
@@ -413,22 +415,13 @@ export default function ArrowStepper() {
         ))}
       </div>
 
-      {/* Step Content */}
-      <div className="w-full max-w-md bg-white rounded-lg border-2 border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          {steps[activeStep]}
-        </h3>
+      <div >
 
         {activeStep === 0 && (
-          <div>
-            <p className="text-gray-600 mb-4">Please enter your data here.</p>
-            <textarea
-              className="w-full p-3 border border-gray-300 rounded-md resize-none"
-              rows="4"
-              placeholder="Enter your input data..."
-            />
+          <div className="flex flex-row items-center gap-4 p-4 bg-white shadow rounded" >
+            <VehicleClassification/>
           </div>
-        )}
+          )}
 
         {activeStep === 1 && (
           <div>
