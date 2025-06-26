@@ -171,7 +171,7 @@ function VehiclePenetration({classificationState, PenetrationState, setPenetrati
           <img
             src={cityImages[classificationState.city]}
             alt={`${classificationState.city} view`}
-            className="w-full h-[500px] object-contain rounded rounded shadow-lg"
+            className="w-full h-[500px] object-contain rounded shadow-lg"
           />
         </div>
         )}
