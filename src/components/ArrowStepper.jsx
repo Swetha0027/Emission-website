@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import VehicleClassification from "./VehicleClassification";
-import VerticalStepper from './VerticalStepper';
+import InputStepper from "./InputStepper";
+
 
 export default function ArrowStepper() {
   const [activeStep, setActiveStep] = useState(-1);
@@ -419,7 +419,7 @@ export default function ArrowStepper() {
 
         {activeStep === 0 && (
           <div className="flex flex-row items-center gap-4 p-4 bg-white shadow rounded" >
-            <VehicleClassification/>
+            <InputStepper/>
           </div>
           )}
 

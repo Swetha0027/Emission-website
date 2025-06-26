@@ -1,3 +1,4 @@
+import React from 'react'
 import { CloudUpload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { HotTable } from '@handsontable/react';
@@ -14,11 +15,8 @@ import VehicleStepper from './VerticalStepper';
 // register Handsontable's modules
 registerAllModules();
 
-
-function VehicleClassification({classificationState, setClassificationState, activeStep}) {
- 
-
-  const statesList = ['', 'Georgia', 'California', 'Seattle', 'NewYork'];
+function VehiclePenetration({classificationState, PenetrationState, setPenetrationState, activeStep}) {
+ const statesList = ['', 'Georgia', 'California', 'Seattle', 'NewYork'];
 
   const cityImages = {
     Georgia,
@@ -30,7 +28,7 @@ function VehicleClassification({classificationState, setClassificationState, act
 
   const handleFileChange = (e) => {
   const file = e.target.files[0];
-  setClassificationState({ ...classificationState, classificationFile: file });
+  setPenetrationState({ ...PenetrationState, PenetrationFile: file });
 
   const reader = new FileReader();
 
@@ -51,9 +49,9 @@ function VehicleClassification({classificationState, setClassificationState, act
     const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     console.log("Parsed data:", parsedData);
     if (parsedData.length > 0) {
-        setClassificationState({ ...classificationState, classificationHeaders: parsedData[0], classificationData: parsedData.slice(1) });
+        setPenetrationState({ ...PenetrationState, penetrationHeaders: parsedData[0], penetrationData: parsedData.slice(1) });
       } else {
-        setClassificationState({ ...classificationState, classificationHeaders: [], classificationData: [] });
+        setPenetrationState({ ...PenetrationState, penetrationHeaders: [], penetrationData: [] });
       }
   };
 
@@ -75,36 +73,37 @@ function VehicleClassification({classificationState, setClassificationState, act
         <form onSubmit={handleSubmit} className="flex items-end gap-4 p-4 shadow rounded">
               {/* Custom Upload Button */}
               <label className="flex items-center bg-blue-300 hover:bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
-                <span className="mr-2">Upload</span> Vehicle Classification Data
+                <span className="mr-2">Upload</span> Projected Vehicle Penetration Rate Data
                 <CloudUpload className="ml-2 w-5 h-5" />
                 <input type="file" accept=".xlsx, .xls, .csv" onChange={handleFileChange} className="hidden" />
               </label>
 
               {/* Base Year Input */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-600 whitespace-nowrap">Input the Base Year</label>
-                <input
-                  type="text"
-                  value={classificationState.baseYear}
-                  onChange={(e) =>
-                    setClassificationState((prevState) => ({
-                    ...prevState,
-                    baseYear: e.target.value,
-                  }))}
-                  placeholder="202#"
-                  className="border rounded px-2 py-1 w-20 h-[32px]"
-                />
-              </div>
+        <div className="flex flex-col gap-1">
+        <select
+            value={PenetrationState.projectedYear}
+            placeholder="Projected Year"
+            onChange={(e) =>
+            setPenetrationState((prevState) => ({
+                ...prevState,
+                projectedYear: e.target.value,
+            }))
+            }
+            className="border rounded px-2 py-1 w-20 h-[32px]"
+        >
+            {classificationState.baseYear &&
+            Array.from({ length: 6 }, (_, index) => parseInt(classificationState.baseYear) + index).map((year) => (
+                <option key={year} value={year}>
+                {year}
+                </option>
+            ))}
+        </select>
+        </div>
 
               {/* Vehicle Type Dropdown */}
               <select
                 value={classificationState.vehicleType}
-                onChange={(e) =>
-                setClassificationState((prevState) => ({
-                ...prevState,
-                vehicleType: e.target.value,
-              }))}
-          
+                disabled
                 className="border rounded px-2 py-1 w-32"
               >
                 <option value="">Vehicle Type</option>
@@ -136,11 +135,7 @@ function VehicleClassification({classificationState, setClassificationState, act
 
               {/* City Dropdown */}
               <select value={classificationState.city} 
-              onChange={(e) =>
-              setClassificationState((prevState) => ({
-                ...prevState,
-                city: e.target.value,
-              }))}
+              disabled
              className="border rounded px-2 py-1 w-25">
                 <option value="">City</option>
                 {statesList.slice(1).map((state) => (
@@ -158,11 +153,11 @@ function VehicleClassification({classificationState, setClassificationState, act
     
 
     <div className="flex flex-row w-full mt-4 gap-4">
-      {classificationState.classificationData.length > 0 && (
+      {PenetrationState.penetrationData.length > 0 && (
               <div className="flex-1 min-w-[60%] overflow-auto border ht-theme-main-dark">
           <HotTable
-            data={classificationState.classificationData}
-            colHeaders={classificationState.classificationHeaders}
+            data={PenetrationState.penetrationData}
+            colHeaders={PenetrationState.penetrationHeaders}
             rowHeaders={true}
             stretchH="all"
             width="100%"
@@ -183,9 +178,7 @@ function VehicleClassification({classificationState, setClassificationState, act
     </div>
     
     </div>
-
-     
-  );
+    );
 }
 
-export default VehicleClassification
+export default VehiclePenetration
