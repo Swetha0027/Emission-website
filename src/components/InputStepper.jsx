@@ -11,7 +11,7 @@ const steps = [
   'Projected Demand'
 ];
 
-function InputStepper() {
+function InputStepper({finalNext}) {
   const [activeStep, setActiveStep] = useState(0);
   const [classificationState, setClassificationState] = useState({
     baseYear: '',
@@ -32,10 +32,10 @@ function InputStepper() {
     console.log("next button clicked")
     if (activeStep < steps.length - 1) {
       setActiveStep(prev => prev + 1);
+    } else if(steps.length === 4) {
+      finalNext();
     }
   };
-
-
 
   const handleBack = () => {
     if (activeStep > 0) {

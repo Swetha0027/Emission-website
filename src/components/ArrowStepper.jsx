@@ -419,7 +419,7 @@ export default function ArrowStepper() {
 
         {activeStep === 0 && (
           <div className="flex flex-row items-center gap-4 p-4 bg-white shadow rounded" >
-            <InputStepper/>
+            <InputStepper finalNext={handleNext}/>
           </div>
           )}
 
@@ -450,15 +450,6 @@ export default function ArrowStepper() {
             className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
           >
             Back
-          </button>
-        )}
-
-        {activeStep < steps.length - 1 && (
-          <button
-            onClick={handleNext}
-            className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-          >
-            {activeStep === steps.length - 2 ? "Finish" : "Next"}
           </button>
         )}
 
