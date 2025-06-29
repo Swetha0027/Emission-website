@@ -15,10 +15,10 @@ import VehicleStepper from "./VerticalStepper";
 // register Handsontable's modules
 registerAllModules();
 
-function VehiclePenetration({
+function VehicleTrafficVolume({
   classificationState,
-  PenetrationState,
-  setPenetrationState,
+  trafficVolumeState,
+  setTrafficVolumeState,
   activeStep,
 }) {
   const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
@@ -30,9 +30,9 @@ function VehiclePenetration({
     NewYork,
   };
 
-  const handleFileChange = (e) => {
+  const handleTrafficFileChange = (e) => {
     const file = e.target.files[0];
-    setPenetrationState({ ...PenetrationState, PenetrationFile: file });
+    setTrafficVolumeState({ ...trafficVolumeState, trafficVolumeFile: file });
 
     const reader = new FileReader();
 
@@ -53,16 +53,61 @@ function VehiclePenetration({
       const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
       console.log("Parsed data:", parsedData);
       if (parsedData.length > 0) {
-        setPenetrationState({
-          ...PenetrationState,
-          penetrationHeaders: parsedData[0],
-          penetrationData: parsedData.slice(1),
+        setTrafficVolumeState({
+          ...trafficVolumeState,
+          trafficVolumeData: parsedData.slice(1),
         });
       } else {
-        setPenetrationState({
-          ...PenetrationState,
-          penetrationHeaders: [],
-          penetrationData: [],
+        setTrafficVolumeState({
+          ...trafficVolumeState,
+          trafficVolumeData: [],
+        });
+      }
+    };
+
+    if (file.name.endsWith(".csv")) {
+      reader.readAsText(file); // CSV is plain text
+    } else {
+      reader.readAsBinaryString(file); // Excel is binary
+    }
+  };
+
+  const handleMFTParametersChange = (e) => {
+    const file = e.target.files[0];
+    setTrafficVolumeState({
+      ...trafficVolumeState,
+      trafficMFTParametersFile: file,
+    });
+
+    const reader = new FileReader();
+
+    reader.onload = (evt) => {
+      const data = evt.target.result;
+      console.log("Parsed data:", data);
+      let workbook;
+
+      if (file.name.endsWith(".csv")) {
+        // For CSV files
+        workbook = XLSX.read(data, { type: "string" });
+      } else {
+        // For Excel files
+        workbook = XLSX.read(data, { type: "binary" });
+      }
+
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      console.log("Parsed data:", parsedData);
+      if (parsedData.length > 0) {
+        setTrafficVolumeState({
+          ...trafficVolumeState,
+          trafficMFTParametersHeaders: parsedData[0],
+          trafficMFTParametersData: parsedData.slice(1),
+        });
+      } else {
+        setTrafficVolumeState({
+          ...trafficVolumeState,
+          trafficMFTParametersHeaders: [],
+          trafficMFTParametersData: [],
         });
       }
     };
@@ -85,76 +130,29 @@ function VehiclePenetration({
           onSubmit={handleSubmit}
           className="flex items-end gap-4 p-4 shadow rounded"
         >
-          {/* Custom Upload Button */}
+          {/* Custom Upload for Traffic Volume */}
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
-            <span className="mr-2">Upload</span> Projected Vehicle Penetration
-            Rate Data
+            <span className="mr-2">Upload</span> Traffic Volume Data
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
               accept=".xlsx, .xls, .csv"
-              onChange={handleFileChange}
+              onChange={handleTrafficFileChange}
               className="hidden"
             />
           </label>
 
-          {/* Base Year Input */}
-          <div className="flex flex-col gap-1">
-            <select
-              value={PenetrationState.projectedYear}
-              placeholder="Projected Year"
-              onChange={(e) =>
-                setPenetrationState((prevState) => ({
-                  ...prevState,
-                  projectedYear: e.target.value,
-                }))
-              }
-              className="border rounded px-2 py-1 w-20 h-[32px]"
-            >
-              {classificationState.baseYear &&
-                Array.from(
-                  { length: 6 },
-                  (_, index) => parseInt(classificationState.baseYear) + index
-                ).map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          {/* Vehicle Type Dropdown */}
-          <select
-            value={classificationState.vehicleType}
-            disabled
-            className="border rounded px-2 py-1 w-32"
-          >
-            <option value="">Vehicle Type</option>
-            <option value="Combination long-haul Truck">
-              Combination long-haul Truck
-            </option>
-            <option value="Combination short-haul Truck">
-              Combination short-haul Truck
-            </option>
-            <option value="Light Commercial Truck">
-              Light Commercial Truck
-            </option>
-            <option value="Motorhome - Recreational Vehicle">
-              Motorhome - Recreational Vehicle
-            </option>
-            <option value="Motorcycle">Motorcycle</option>
-            <option value="Other Buses">Other Buses</option>
-            <option value="Passenger Truck">Passenger Truck</option>
-            <option value="Refuse Truck">Refuse Truck</option>
-            <option value="School Bus">School Bus</option>
-            <option value="Single Unit long-haul Truck">
-              Single Unit long-haul Truck
-            </option>
-            <option value="Single Unit short-haul Truck">
-              Single Unit short-haul Truck
-            </option>
-            <option value="Transit Bus">Transit Bus</option>
-          </select>
+          {/* Custom Upload for MFT Parameters */}
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
+            <span className="mr-2">Upload</span> MFT Parameters
+            <CloudUpload className="ml-2 w-5 h-5" />
+            <input
+              type="file"
+              accept=".xlsx, .xls, .csv"
+              onChange={handleMFTParametersChange}
+              className="hidden"
+            />
+          </label>
 
           {/* City Dropdown */}
           <select
@@ -170,11 +168,11 @@ function VehiclePenetration({
             ))}
           </select>
         </form>
-        {PenetrationState.penetrationData.length > 0 ? (
+        {trafficVolumeState.trafficMFTParametersData.length > 0 ? (
           <div className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark">
             <HotTable
-              data={PenetrationState.penetrationData}
-              colHeaders={PenetrationState.penetrationHeaders}
+              data={trafficVolumeState.trafficMFTParametersData}
+              colHeaders={trafficVolumeState.trafficMFTParametersHeaders}
               rowHeaders={true}
               stretchH="all"
               height={"auto"}
@@ -221,4 +219,4 @@ function VehiclePenetration({
   );
 }
 
-export default VehiclePenetration;
+export default VehicleTrafficVolume;
