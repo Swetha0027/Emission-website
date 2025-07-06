@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import VehicleClassification from "./VehicleClassification";
 import VehiclePenetration from "./VehiclePenetration";
 import VehicleTrafficVolume from "./VehicleTrafficVolume";
+import IconButton from "@mui/material/IconButton";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Stack from "@mui/material/Stack";
 
 const steps = [
   "Vehicle Classification Data",
@@ -39,21 +43,18 @@ function InputStepper({ finalNext }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex gap-4 mt-4">
-        <button
+      <Stack direction="row" spacing={1}>
+        <IconButton
+          aria-label="previous"
           onClick={handleBack}
           disabled={activeStep === 0}
-          className="bg-gray-300 hover:bg-gray-400 text-black font-semibold px-4 py-2 rounded"
         >
-          Previous
-        </button>
-        <button
-          onClick={handleNext}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded"
-        >
-          Next
-        </button>
-      </div>
+          <ChevronLeftIcon />
+        </IconButton>
+        <IconButton aria-label="next" onClick={handleNext}>
+          <ChevronRightIcon />
+        </IconButton>
+      </Stack>
     </div>
   );
 }

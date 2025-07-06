@@ -1,6 +1,7 @@
 import React from "react";
 import headerBackground from "../assets/navigation-back.png";
 import Notifications from "./Notifications";
+import { Link } from "react-router-dom";
 const Header = () => {
   return (
     <header
@@ -25,16 +26,15 @@ const Header = () => {
         <Notifications />
       </div>
 
-      <div>
-        <button
-          className="text-white font-semibold py-1 px-4 rounded-md border border-black shadow-sm"
-          style={{
-            backgroundColor: "#163e73",
-          }}
-        >
-          Sign In
-        </button>
-      </div>
+      <Link
+        to={"/signin"}
+        className="text-white font-semibold py-1 px-4 rounded-md border border-black shadow-sm"
+        style={{
+          backgroundColor: "#163e73",
+        }}
+      >
+        Sign In
+      </Link>
     </header>
   );
 };

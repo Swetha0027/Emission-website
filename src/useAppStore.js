@@ -40,6 +40,26 @@ const useAppStore = create((set) => ({
     set((state) => ({
       trafficVolumeState: { ...state.trafficVolumeState, ...partial },
     })),
+
+    // ConsumptionAndEmission slice
+  ConsumptionAndEmission: {
+    FuelType: "",
+    EmissionType: "",
+    VehicleAge: "",
+  },
+  setConsumptionAndEmission: (partial) =>
+    set((state) => ({
+      ConsumptionAndEmission: { ...state.ConsumptionAndEmission, ...partial },
+    })),
+
+      // GridEmmision slice
+  GridEmission: {
+    EmissionType: "",
+  },
+  setGridEmission: (partial) =>
+    set((state) => ({
+      GridEmission: { ...state.GridEmission, ...partial },
+    })),
 }));
 
 export default useAppStore;

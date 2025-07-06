@@ -7,6 +7,12 @@ import VehicleStepper from "./VerticalStepper";
 
 const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
   const classificationState = useAppStore((state) => state.classificationState);
+  const ConsumptionAndEmissionState = useAppStore(
+    (state) => state.ConsumptionAndEmission
+  );
+  const setConsumptionAndEmissionState = useAppStore(
+    (state) => state.setConsumptionAndEmission
+  );
   const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
   const cityImages = { Georgia, California, Seattle, NewYork };
   const steps = [
@@ -19,108 +25,56 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 shadow rounded">
-          {/* <select
-            value={classificationState.vehicleType}
+          <select
+            value={ConsumptionAndEmissionState.FuelType}
             onChange={(e) =>
-              setClassificationState({ vehicleType: e.target.value })
+              setConsumptionAndEmissionState({
+                FuelType: e.target.value,
+              })
             }
-            disabled={classificationState.classificationData.length === 0}
             className="border rounded px-2 py-1 w-32"
           >
-            <option value="">Vehicle Type</option>
-            <option value="Combination long-haul Truck">
-              Combination long-haul Truck
+            <option value="">Select Fuel Type</option>
+            <option value="Compressed Natural Gas - CNG">
+              Compressed Natural Gas - CNG
             </option>
-            <option value="Combination short-haul Truck">
-              Combination short-haul Truck
-            </option>
-            <option value="Light Commercial Truck">
-              Light Commercial Truck
-            </option>
-            <option value="Motorhome - Recreational Vehicle">
-              Motorhome - Recreational Vehicle
-            </option>
-            <option value="Motorcycle">Motorcycle</option>
-            <option value="Other Buses">Other Buses</option>
-            <option value="Passenger Truck">Passenger Truck</option>
-            <option value="Refuse Truck">Refuse Truck</option>
-            <option value="School Bus">School Bus</option>
-            <option value="Single Unit long-haul Truck">
-              Single Unit long-haul Truck
-            </option>
-            <option value="Single Unit short-haul Truck">
-              Single Unit short-haul Truck
-            </option>
-            <option value="Transit Bus">Transit Bus</option>
+            <option value="Diesel Fuel">Diesel Fuel</option>
+            <option value="Electricity">Electricity</option>
+            <option value="Ethanol - E-85">Ethanol - E-85</option>
+            <option value="Gasoline">Gasoline</option>
           </select>
           <select
-            value={classificationState.vehicleType}
+            value={ConsumptionAndEmissionState.EmissionType}
             onChange={(e) =>
-              setClassificationState({ vehicleType: e.target.value })
+              setConsumptionAndEmissionState({
+                EmissionType: e.target.value,
+              })
             }
-            disabled={classificationState.classificationData.length === 0}
             className="border rounded px-2 py-1 w-32"
           >
-            <option value="">Vehicle Type</option>
-            <option value="Combination long-haul Truck">
-              Combination long-haul Truck
-            </option>
-            <option value="Combination short-haul Truck">
-              Combination short-haul Truck
-            </option>
-            <option value="Light Commercial Truck">
-              Light Commercial Truck
-            </option>
-            <option value="Motorhome - Recreational Vehicle">
-              Motorhome - Recreational Vehicle
-            </option>
-            <option value="Motorcycle">Motorcycle</option>
-            <option value="Other Buses">Other Buses</option>
-            <option value="Passenger Truck">Passenger Truck</option>
-            <option value="Refuse Truck">Refuse Truck</option>
-            <option value="School Bus">School Bus</option>
-            <option value="Single Unit long-haul Truck">
-              Single Unit long-haul Truck
-            </option>
-            <option value="Single Unit short-haul Truck">
-              Single Unit short-haul Truck
-            </option>
-            <option value="Transit Bus">Transit Bus</option>
+            <option value="">Select Emission Type</option>
+            <option value="CO₂ Emissions">CO₂ Emissions</option>
+            <option value="Energy Rate">Energy Rate</option>
+            <option value="NOx">NOx</option>
+            <option value="PM2.5 Brake Wear">PM2.5 Brake Wear</option>
+            <option value="PM2.5 Tire Wear">PM2.5 Tire Wear</option>
           </select>
-          <select
-            value={classificationState.vehicleType}
-            onChange={(e) =>
-              setClassificationState({ vehicleType: e.target.value })
-            }
-            disabled={classificationState.classificationData.length === 0}
-            className="border rounded px-2 py-1 w-32"
-          >
-            <option value="">Vehicle Type</option>
-            <option value="Combination long-haul Truck">
-              Combination long-haul Truck
-            </option>
-            <option value="Combination short-haul Truck">
-              Combination short-haul Truck
-            </option>
-            <option value="Light Commercial Truck">
-              Light Commercial Truck
-            </option>
-            <option value="Motorhome - Recreational Vehicle">
-              Motorhome - Recreational Vehicle
-            </option>
-            <option value="Motorcycle">Motorcycle</option>
-            <option value="Other Buses">Other Buses</option>
-            <option value="Passenger Truck">Passenger Truck</option>
-            <option value="Refuse Truck">Refuse Truck</option>
-            <option value="School Bus">School Bus</option>
-            <option value="Single Unit long-haul Truck">
-              Single Unit long-haul Truck
-            </option>
-            <option value="Single Unit short-haul Truck">
-              Single Unit short-haul Truck
-            </option>
-            <option value="Transit Bus">Transit Bus</option>
-          </select> */}
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-600">Vehicle Age</label>
+            <input
+              type="text"
+              value={ConsumptionAndEmissionState.VehicleAge}
+              onChange={(e) =>
+                setConsumptionAndEmissionState({
+                  VehicleAge: e.target.value,
+                })
+              }
+              className="border rounded px-2 py-1 w-20 h-[32px]"
+              placeholder="Enter age in Years..."
+            />
+          </div>
+
           <select
             value={classificationState.city}
             disabled
