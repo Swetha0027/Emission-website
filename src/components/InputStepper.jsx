@@ -6,6 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Stack from "@mui/material/Stack";
+import ProjectedDemand from "./ProjectedDemand";
 
 const steps = [
   "Vehicle Classification Data",
@@ -40,6 +41,7 @@ function InputStepper({ finalNext }) {
         {activeStep === 1 && <VehiclePenetration activeStep={activeStep} />}
 
         {activeStep === 2 && <VehicleTrafficVolume activeStep={activeStep} />}
+        {activeStep === 3 && <ProjectedDemand activeStep={activeStep} />}
       </div>
 
       {/* Navigation Buttons */}

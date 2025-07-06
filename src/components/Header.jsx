@@ -2,6 +2,9 @@ import React from "react";
 import headerBackground from "../assets/navigation-back.png";
 import Notifications from "./Notifications";
 import { Link } from "react-router-dom";
+import HomeIcon from "@mui/icons-material/Home";
+import { IconButton } from "@mui/material";
+
 const Header = () => {
   return (
     <header
@@ -13,11 +16,11 @@ const Header = () => {
         color: "#163e73",
       }}
     >
-      <div className="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      <Link to={"/"}>
+        <IconButton aria-label="home">
+          <HomeIcon />
+        </IconButton>
+      </Link>
 
       <div>
         <h1 className="text-xl font-bold">

@@ -60,6 +60,17 @@ const useAppStore = create((set) => ({
     set((state) => ({
       GridEmission: { ...state.GridEmission, ...partial },
     })),
+
+    projectedDemandState: {
+      projectedTrafficVolumeFile: null,
+      projectedTrafficVolumeData: [],
+      projectedTrafficVolumeHeaders: []
+    },
+
+    setProjectedDemandState: (partial) =>
+      set((state)=>({
+        projectedDemandState: { ...state.projectedDemandState, ...partial}
+      }))
 }));
 
 export default useAppStore;
