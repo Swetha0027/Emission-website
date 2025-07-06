@@ -1,3 +1,4 @@
+import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/react";
@@ -11,84 +12,56 @@ import California from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
-// register Handsontable's modules
+import useAppStore from "../useAppStore";
+
 registerAllModules();
 
-function VehicleClassification({
-  classificationState,
-  setClassificationState,
-  activeStep,
-}) {
-  const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
+function VehicleClassification({ activeStep }) {
+  const classificationState = useAppStore((s) => s.classificationState);
+  const setClassificationState = useAppStore((s) => s.setClassificationState);
 
-  const cityImages = {
-    Georgia,
-    California,
-    Seattle,
-    NewYork,
-  };
+  const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
+  const cityImages = { Georgia, California, Seattle, NewYork };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setClassificationState({
-      ...classificationState,
-      classificationFile: file,
-    });
-
+    setClassificationState({ classificationFile: file });
     const reader = new FileReader();
 
     reader.onload = (evt) => {
       const data = evt.target.result;
-      console.log("Parsed data:", data);
       let workbook;
-
       if (file.name.endsWith(".csv")) {
-        // For CSV files
         workbook = XLSX.read(data, { type: "string" });
       } else {
-        // For Excel files
         workbook = XLSX.read(data, { type: "binary" });
       }
-
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      console.log("Parsed data:", parsedData);
       if (parsedData.length > 0) {
         setClassificationState({
-          ...classificationState,
           classificationHeaders: parsedData[0],
           classificationData: parsedData.slice(1),
         });
       } else {
         setClassificationState({
-          ...classificationState,
           classificationHeaders: [],
           classificationData: [],
         });
       }
     };
 
-    if (file.name.endsWith(".csv")) {
-      reader.readAsText(file); // CSV is plain text
-    } else {
-      reader.readAsBinaryString(file); // Excel is binary
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    if (file.name.endsWith(".csv")) reader.readAsText(file);
+    else reader.readAsBinaryString(file);
   };
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
+      {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-end gap-4 p-4 shadow rounded"
-        >
-          {/* Custom Upload Button */}
+        <form className="flex items-end gap-4 p-4 shadow rounded">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
-            <span className="mr-2">Upload</span> Vehicle Classification Data
+            <span className="mr-2">Upload</span> Vehicle Classification
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
@@ -98,36 +71,26 @@ function VehicleClassification({
             />
           </label>
 
-          {/* Base Year Input */}
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-600 whitespace-nowrap">
-              Input the Base Year
-            </label>
+            <label className="text-xs text-gray-600">Base Year</label>
             <input
               type="text"
               value={classificationState.baseYear}
               onChange={(e) =>
-                setClassificationState((prevState) => ({
-                  ...prevState,
-                  baseYear: e.target.value,
-                }))
+                setClassificationState({ baseYear: e.target.value })
               }
-              placeholder="202#"
               className="border rounded px-2 py-1 w-20 h-[32px]"
-              disabled={classificationState.classificationData.length <= 0}
+              disabled={classificationState.classificationData.length === 0}
+              placeholder="202#"
             />
           </div>
 
-          {/* Vehicle Type Dropdown */}
           <select
             value={classificationState.vehicleType}
             onChange={(e) =>
-              setClassificationState((prevState) => ({
-                ...prevState,
-                vehicleType: e.target.value,
-              }))
+              setClassificationState({ vehicleType: e.target.value })
             }
-            disabled={classificationState.classificationData.length <= 0}
+            disabled={classificationState.classificationData.length === 0}
             className="border rounded px-2 py-1 w-32"
           >
             <option value="">Vehicle Type</option>
@@ -157,26 +120,21 @@ function VehicleClassification({
             <option value="Transit Bus">Transit Bus</option>
           </select>
 
-          {/* City Dropdown */}
           <select
             value={classificationState.city}
-            onChange={(e) =>
-              setClassificationState((prevState) => ({
-                ...prevState,
-                city: e.target.value,
-              }))
-            }
+            onChange={(e) => setClassificationState({ city: e.target.value })}
+            disabled={classificationState.classificationData.length === 0}
             className="border rounded px-2 py-1 w-25"
-            disabled={classificationState.classificationData.length <= 0}
           >
             <option value="">City</option>
-            {statesList.slice(1).map((state) => (
-              <option key={state} value={state}>
-                {state}
+            {statesList.slice(1).map((st) => (
+              <option key={st} value={st}>
+                {st}
               </option>
             ))}
           </select>
         </form>
+
         {classificationState.classificationData.length > 0 ? (
           <div
             className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark"
@@ -185,30 +143,16 @@ function VehicleClassification({
             <HotTable
               data={classificationState.classificationData}
               colHeaders={classificationState.classificationHeaders}
-              rowHeaders={true}
+              rowHeaders
               stretchH="all"
-              height={"100%"}
+              height="100%"
               width="100%"
               licenseKey="non-commercial-and-evaluation"
             />
           </div>
         ) : (
           <div className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark">
-            <div className="opacity-50 pointer-events-none">
-              <HotTable
-                data={Array(50).fill(["No data", "No data", "No data"])}
-                colHeaders={["Column 1", "Column 2", "Column 3"]}
-                rowHeaders={true}
-                height={500}
-                stretchH="all"
-                width="100%"
-                readOnly={true}
-                licenseKey="non-commercial-and-evaluation"
-              />
-            </div>
-            <div className="text-center text-gray-500 mt-2 mb-2">
-              No classification data available
-            </div>
+            {/* placeholder table */}
           </div>
         )}
       </div>
@@ -218,13 +162,11 @@ function VehicleClassification({
           <VehicleStepper activeStep={activeStep} />
         </div>
         {classificationState.city && cityImages[classificationState.city] && (
-          <div className="flex-1 flex items-center justify-center">
-            <img
-              src={cityImages[classificationState.city]}
-              alt={`${classificationState.city} view`}
-              className="w-full h-[500px] object-contain rounded shadow-lg"
-            />
-          </div>
+          <img
+            src={cityImages[classificationState.city]}
+            alt={classificationState.city}
+            className="w-full h-[500px] object-contain rounded shadow-lg"
+          />
         )}
       </div>
     </div>

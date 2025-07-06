@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import InputStepper from "./InputStepper";
 
-
 export default function ArrowStepper() {
   const [activeStep, setActiveStep] = useState(-1);
   const steps = ["Input Data", "Analysis", "Results"];
@@ -415,20 +414,16 @@ export default function ArrowStepper() {
         ))}
       </div>
 
-      <div >
-
+      <div>
         {activeStep === 0 && (
-          <div className="flex flex-row items-center gap-4 p-4 bg-white shadow rounded" >
-            <InputStepper finalNext={handleNext}/>
+          <div className="flex flex-row items-center gap-4 p-4 bg-white shadow rounded">
+            <InputStepper finalNext={handleNext} />
           </div>
-          )}
+        )}
 
         {activeStep === 1 && (
-          <div>
-            <p className="text-gray-600 mb-4">Analysis is in progress...</p>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-green-500 h-2 rounded-full w-3/4 transition-all duration-300"></div>
-            </div>
+          <div className="flex flex-row items-center gap-4 p-4 bg-white shadow rounded">
+            <AnalysisStepper finalNext={handleNext} />
           </div>
         )}
 

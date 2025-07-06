@@ -1,23 +1,20 @@
 import React, { useState } from "react";
-import VehicleClassification from "./VehicleClassification";
-import VehiclePenetration from "./VehiclePenetration";
-import VehicleTrafficVolume from "./VehicleTrafficVolume";
+import useAppStore from "../useAppStore";
 
 const steps = [
-  "Vehicle Classification Data",
-  "Projected Vehicle Penetration Rate Data",
-  "Traffic Volume and Speed",
-  "Projected Demand",
+  "Vehicle Energy Consumption and Emission Rates",
+  " Grid Emission Rates",
 ];
 
-function InputStepper({ finalNext }) {
+function AnalysisStepper({ finalNext }) {
   const [activeStep, setActiveStep] = useState(0);
+  const classificationState = useAppStore((state) => state.classificationState);
 
   const handleNext = () => {
     console.log("next button clicked");
     if (activeStep < steps.length - 1) {
       setActiveStep((prev) => prev + 1);
-    } else if (steps.length === 4) {
+    } else if (steps.length == 2) {
       finalNext();
     }
   };
@@ -32,10 +29,18 @@ function InputStepper({ finalNext }) {
     <div className="flex flex-col items-center gap-5 pl-6 pt-4">
       {/* Step-wise content */}
       <div className="w-full">
-        {activeStep === 0 && <VehicleClassification activeStep={activeStep} />}
-        {activeStep === 1 && <VehiclePenetration activeStep={activeStep} />}
-
-        {activeStep === 2 && <VehicleTrafficVolume activeStep={activeStep} />}
+        {activeStep === 0 && (
+          <EnergyConsumptionAndEmissionRates
+            activeStep={activeStep}
+            classificationState={classificationState}
+          />
+        )}
+        {activeStep === 1 && (
+          <GridEmissionRates
+            activeStep={activeStep}
+            classificationState={classificationState}
+          />
+        )}
       </div>
 
       {/* Navigation Buttons */}
@@ -58,4 +63,4 @@ function InputStepper({ finalNext }) {
   );
 }
 
-export default InputStepper;
+export default AnalysisStepper;
