@@ -23,6 +23,12 @@ function VehicleTrafficVolume({ activeStep }) {
 
   const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
   const cityImages = { Georgia, California, Seattle, NewYork };
+  const verticalSteps = [
+    "Vehicle Classification Data",
+    "Projected Vehicle Penetration Rate Data",
+    "Traffic Volume and Speed",
+    "Projected Demand",
+  ];
 
   const loadSheet = (file, keyHeaders, keyData) => {
     const reader = new FileReader();
@@ -116,7 +122,7 @@ function VehicleTrafficVolume({ activeStep }) {
         )}
       </div>
       <div className="flex flex-col gap-6">
-        <VehicleStepper activeStep={activeStep} />
+        <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
         {classificationState.city && (
           <img
             src={cityImages[classificationState.city]}

@@ -22,6 +22,12 @@ function VehicleClassification({ activeStep }) {
 
   const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
   const cityImages = { Georgia, California, Seattle, NewYork };
+  const verticalSteps = [
+    "Vehicle Classification Data",
+    "Projected Vehicle Penetration Rate Data",
+    "Traffic Volume and Speed",
+    "Projected Demand",
+  ];
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -159,7 +165,7 @@ function VehicleClassification({ activeStep }) {
 
       <div className="flex flex-col gap-6">
         <div className="ml-4">
-          <VehicleStepper activeStep={activeStep} />
+          <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
         </div>
         {classificationState.city && cityImages[classificationState.city] && (
           <img

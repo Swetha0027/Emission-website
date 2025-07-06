@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import useAppStore from "../useAppStore";
+import EnergyConsumptionAndEmissionRates from "./EnergyConsumptionAndEmissionRates";
+import GridEmissionRates from "./GridEmissionRates";
 
 const steps = [
   "Vehicle Energy Consumption and Emission Rates",
@@ -8,7 +9,6 @@ const steps = [
 
 function AnalysisStepper({ finalNext }) {
   const [activeStep, setActiveStep] = useState(0);
-  const classificationState = useAppStore((state) => state.classificationState);
 
   const handleNext = () => {
     console.log("next button clicked");
@@ -30,17 +30,9 @@ function AnalysisStepper({ finalNext }) {
       {/* Step-wise content */}
       <div className="w-full">
         {activeStep === 0 && (
-          <EnergyConsumptionAndEmissionRates
-            activeStep={activeStep}
-            classificationState={classificationState}
-          />
+          <EnergyConsumptionAndEmissionRates activeStep={activeStep} />
         )}
-        {activeStep === 1 && (
-          <GridEmissionRates
-            activeStep={activeStep}
-            classificationState={classificationState}
-          />
-        )}
+        {activeStep === 1 && <GridEmissionRates activeStep={activeStep} />}
       </div>
 
       {/* Navigation Buttons */}

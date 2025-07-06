@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import InputStepper from "./InputStepper";
+import AnalysisStepper from "./AnalysisStepper";
 
 export default function ArrowStepper() {
   const [activeStep, setActiveStep] = useState(-1);
