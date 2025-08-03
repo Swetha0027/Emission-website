@@ -4,11 +4,18 @@ import SignUp from "./components/SignUp";
 import ArrowStepper from "./components/ArrowStepper";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import useAppStore from "./useAppStore";
 
 const App = () => {
+  const theme = useAppStore((s) => s.theme);
+
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col ">
+      <div
+        className={`min-h-screen flex flex-col ${
+          theme === "dark" ? "dark" : ""
+        }`}
+      >
         <Header />
         <Routes>
           <Route path="/" element={<ArrowStepper />} />

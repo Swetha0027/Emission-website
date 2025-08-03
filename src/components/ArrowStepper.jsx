@@ -407,12 +407,21 @@ export default function ArrowStepper() {
       `}</style>
 
       {/* Stepper */}
-      <div className="flex items-center gap-4">
-        {steps.map((step, index) => (
-          <div key={step} className={getStepStyle(index) + " min-w-[180px]"}>
-            <span className="relative z-10">{step}</span>
-          </div>
-        ))}
+      <div className="flex justify-center items-center gap-4">
+        <div className="flex items-center gap-4">
+          {steps.map((step, index) => (
+            <div key={step} className={getStepStyle(index) + " min-w-[180px]"}>
+              <span className="relative z-10">{step}</span>
+            </div>
+          ))}
+        </div>
+        <button
+          disabled={activeStep !== -1}
+          onClick={handleStart}
+          className="px-8 py-3 bg-blue-400 text-white rounded-lg font-medium cursor-not-allowed transition-colors"
+        >
+          Start
+        </button>
       </div>
 
       <div>

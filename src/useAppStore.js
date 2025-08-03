@@ -70,7 +70,11 @@ const useAppStore = create((set) => ({
     setProjectedDemandState: (partial) =>
       set((state)=>({
         projectedDemandState: { ...state.projectedDemandState, ...partial}
-      }))
+      })),
+
+  // Theme slice
+  theme: "light",
+  setTheme: (theme) => set({ theme }),
 }));
 
 export default useAppStore;

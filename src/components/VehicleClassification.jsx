@@ -28,6 +28,7 @@ function VehicleClassification({ activeStep }) {
     "Traffic Volume and Speed",
     "Projected Demand",
   ];
+  const [AllData, setAllData] = React.useState([]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -49,16 +50,53 @@ function VehicleClassification({ activeStep }) {
           classificationHeaders: parsedData[0],
           classificationData: parsedData.slice(1),
         });
+        setAllData(parsedData.slice(1));
+        console.log("Classification Data:", parsedData.slice(1));
       } else {
         setClassificationState({
           classificationHeaders: [],
           classificationData: [],
         });
+        setAllData([]);
       }
     };
 
     if (file.name.endsWith(".csv")) reader.readAsText(file);
     else reader.readAsBinaryString(file);
+  };
+
+  const handleVehicleChange = (selectedVehicleType) => {
+    console.log("Selected Vehicle Type:", selectedVehicleType);
+
+    if (selectedVehicleType === "" || !selectedVehicleType) {
+      setClassificationState((prevState) => ({
+        ...prevState,
+        classificationData: [],
+      }));
+    } else {
+      let filteredData = AllData.filter(
+        (row) =>
+          row[0].toString().trim().toLowerCase() ===
+          selectedVehicleType.toString().trim().toLowerCase()
+      );
+
+      console.log("Filtered Data:", filteredData);
+
+      if (filteredData.length === 0) {
+        setClassificationState({
+          classificationData: AllData,
+        });
+      } else {
+        setClassificationState({
+          classificationData: filteredData,
+        });
+      }
+
+      console.log(
+        "Updated Classification Data:",
+        classificationState.classificationData
+      );
+    }
   };
 
   return (
@@ -86,17 +124,18 @@ function VehicleClassification({ activeStep }) {
                 setClassificationState({ baseYear: e.target.value })
               }
               className="border rounded px-2 py-1 w-20 h-[32px]"
-              disabled={classificationState.classificationData.length === 0}
+              disabled={AllData === 0 || classificationState.city === ""}
               placeholder="202#"
             />
           </div>
 
           <select
             value={classificationState.vehicleType}
-            onChange={(e) =>
-              setClassificationState({ vehicleType: e.target.value })
-            }
-            disabled={classificationState.classificationData.length === 0}
+            onChange={(e) => {
+              setClassificationState({ vehicleType: e.target.value });
+              handleVehicleChange(classificationState.vehicleType);
+            }}
+            disabled={AllData.length === 0 || classificationState.city === ""}
             className="border rounded px-2 py-1 w-32"
           >
             <option value="">Vehicle Type</option>
@@ -129,7 +168,7 @@ function VehicleClassification({ activeStep }) {
           <select
             value={classificationState.city}
             onChange={(e) => setClassificationState({ city: e.target.value })}
-            disabled={classificationState.classificationData.length === 0}
+            disabled={AllData.length === 0}
             className="border rounded px-2 py-1 w-25"
           >
             <option value="">City</option>
