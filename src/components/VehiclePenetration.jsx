@@ -7,8 +7,8 @@ import { registerAllModules } from "handsontable/registry";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
-import Georgia from "../assets/Georgia.svg";
-import California from "../assets/California.svg";
+import Atlanta from "../assets/Georgia.svg";
+import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
@@ -21,7 +21,7 @@ function VehiclePenetration({ activeStep }) {
   const penetrationState = useAppStore((s) => s.penetrationState);
   const setPenetrationState = useAppStore((s) => s.setPenetrationState);
 
-  const cityImages = { Georgia, California, Seattle, NewYork };
+  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",

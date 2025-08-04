@@ -1,6 +1,6 @@
 import useAppStore from "../useAppStore";
-import Georgia from "../assets/Georgia.svg";
-import California from "../assets/California.svg";
+import Atlanta from "../assets/Georgia.svg";
+import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
@@ -16,8 +16,8 @@ import Button from "@mui/material/Button";
 
 const GridEmissionRates = ({ activeStep }) => {
   const classificationState = useAppStore((state) => state.classificationState);
-  const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
-  const cityImages = { Georgia, California, Seattle, NewYork };
+  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
+  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   const steps = [
     "Vehicle Energy Consumption and Emission Rates",
     " Grid Emission Rates",
@@ -115,7 +115,7 @@ const GridEmissionRates = ({ activeStep }) => {
             <option value="PM2.5 Tire Wear">PM2.5 Tire Wear</option>
           </select>
           <select
-            value={classificationState.city}
+            value={classificationState.cityInput}
             disabled
             className="border rounded px-2 py-1 w-32"
           >

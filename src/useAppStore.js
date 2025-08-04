@@ -7,6 +7,7 @@ const useAppStore = create((set) => ({
     baseYear: "",
     vehicleType: "",
     city: "",
+    cityInput: "",
     classificationFile: null,
     classificationData: [],
     classificationHeaders: [],

@@ -7,8 +7,8 @@ import { registerAllModules } from "handsontable/registry";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
-import Georgia from "../assets/Georgia.svg";
-import California from "../assets/California.svg";
+import Atlanta from "../assets/Georgia.svg";
+import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
@@ -20,8 +20,8 @@ function VehicleClassification({ activeStep }) {
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
 
-  const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
-  const cityImages = { Georgia, California, Seattle, NewYork };
+  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
+  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
@@ -111,6 +111,7 @@ function VehicleClassification({ activeStep }) {
               type="file"
               accept=".xlsx, .xls, .csv"
               onChange={handleFileChange}
+              disabled={classificationState.city === ""}
               className="hidden"
             />
           </label>
@@ -124,7 +125,7 @@ function VehicleClassification({ activeStep }) {
                 setClassificationState({ baseYear: e.target.value })
               }
               className="border rounded px-2 py-1 w-20 h-[32px]"
-              disabled={AllData === 0 || classificationState.city === ""}
+              disabled={classificationState.city === ""}
               placeholder="202#"
             />
           </div>
@@ -135,7 +136,7 @@ function VehicleClassification({ activeStep }) {
               setClassificationState({ vehicleType: e.target.value });
               handleVehicleChange(classificationState.vehicleType);
             }}
-            disabled={AllData.length === 0 || classificationState.city === ""}
+            disabled={classificationState.city === ""}
             className="border rounded px-2 py-1 w-32"
           >
             <option value="">Vehicle Type</option>
@@ -166,9 +167,13 @@ function VehicleClassification({ activeStep }) {
           </select>
 
           <select
-            value={classificationState.city}
-            onChange={(e) => setClassificationState({ city: e.target.value })}
-            disabled={AllData.length === 0}
+            value={classificationState.cityInput}
+            onChange={(e) =>
+              setClassificationState({
+                cityInput: e.target.value,
+                city: e.target.value.replace(/\s+/g, ""), // Keep cleaned version updated
+              })
+            }
             className="border rounded px-2 py-1 w-25"
           >
             <option value="">City</option>

@@ -4,8 +4,8 @@ import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/react";
 import { registerAllModules } from "handsontable/registry";
 import useAppStore from "../useAppStore";
-import Georgia from "../assets/Georgia.svg";
-import California from "../assets/California.svg";
+import Atlanta from "../assets/Georgia.svg";
+import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import "handsontable/dist/handsontable.full.min.css";
@@ -47,8 +47,8 @@ function ProjectedDemand({ activeStep }) {
     });
   };
 
-  const statesList = ["", "Georgia", "California", "Seattle", "NewYork"];
-  const cityImages = { Georgia, California, Seattle, NewYork };
+  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
+  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
@@ -87,7 +87,7 @@ function ProjectedDemand({ activeStep }) {
           </select>
 
           <select
-            value={classificationState.city}
+            value={classificationState.cityInput}
             disabled
             className="border rounded px-2 py-1 w-25"
           >
