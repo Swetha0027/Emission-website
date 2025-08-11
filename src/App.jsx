@@ -10,19 +10,35 @@ const App = () => {
   const theme = useAppStore((s) => s.theme);
 
   return (
+    // App.tsx
     <BrowserRouter>
-      <div
-        className={`min-h-screen flex flex-col ${
-          theme === "dark" ? "dark" : ""
-        }`}
-      >
-        <Header />
-        <Routes>
-          <Route path="/" element={<ArrowStepper />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-        </Routes>
-        <Footer />
+      <div className={theme === "dark" ? "dark" : ""}>
+        {/* Fixed Header */}
+        <div
+          className="fixed top-0 left-0 right-0 h-[110px] box-border z-[1000]
+                    bg-white/80 dark:bg-gray-900/80 backdrop-blur
+                    border-b border-gray-200 dark:border-gray-800"
+        >
+          <Header />
+        </div>
+
+        {/* Content — pad to avoid overlap */}
+        <main className="pt-[110px] pb-[56px]">
+          <Routes>
+            <Route path="/" element={<ArrowStepper />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Routes>
+        </main>
+
+        {/* Fixed Footer */}
+        <div
+          className="fixed bottom-0 left-0 right-0 h-[56px] box-border z-[1000]
+                    bg-white/80 dark:bg-gray-900/80 backdrop-blur
+                    border-t border-gray-200 dark:border-gray-800"
+        >
+          <Footer />
+        </div>
       </div>
     </BrowserRouter>
   );

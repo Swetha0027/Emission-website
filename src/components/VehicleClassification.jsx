@@ -17,6 +17,7 @@ import useAppStore from "../useAppStore";
 registerAllModules();
 
 function VehicleClassification({ activeStep }) {
+  const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
 
@@ -100,11 +101,21 @@ function VehicleClassification({ activeStep }) {
   };
 
   return (
-    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
+    <div
+      className={`flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300 `}
+    >
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
-        <form className="flex items-end gap-4 p-4 shadow rounded">
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
+        <form
+          className={`flex items-end gap-4 p-4 rounded transition-colors duration-300`}
+        >
+          <label
+            className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] transition-colors duration-300 ${
+              theme === "dark"
+                ? "bg-blue-900 text-white"
+                : "bg-blue-400 text-white"
+            }`}
+          >
             <span className="mr-2">Upload</span> Vehicle Classification
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
@@ -115,21 +126,29 @@ function VehicleClassification({ activeStep }) {
               className="hidden"
             />
           </label>
-
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-600">Base Year</label>
+            <label
+              className={`text-xs ${
+                theme === "dark" ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
+              Base Year
+            </label>
             <input
               type="text"
               value={classificationState.baseYear}
               onChange={(e) =>
                 setClassificationState({ baseYear: e.target.value })
               }
-              className="border rounded px-2 py-1 w-20 h-[32px]"
+              className={`border rounded px-2 py-1 w-20 h-[32px] transition-colors duration-300 ${
+                theme === "dark"
+                  ? "bg-[#18181b] text-white border-gray-700 placeholder-gray-400"
+                  : "bg-white text-black border-gray-300"
+              }`}
               disabled={classificationState.city === ""}
               placeholder="202#"
             />
           </div>
-
           <select
             value={classificationState.vehicleType}
             onChange={(e) => {
@@ -137,7 +156,11 @@ function VehicleClassification({ activeStep }) {
               handleVehicleChange(classificationState.vehicleType);
             }}
             disabled={classificationState.city === ""}
-            className="border rounded px-2 py-1 w-32"
+            className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
+              theme === "dark"
+                ? "bg-[#18181b] text-white border-gray-700"
+                : "bg-white text-black border-gray-300"
+            }`}
           >
             <option value="">Vehicle Type</option>
             <option value="Combination long-haul Truck">
@@ -165,7 +188,6 @@ function VehicleClassification({ activeStep }) {
             </option>
             <option value="Transit Bus">Transit Bus</option>
           </select>
-
           <select
             value={classificationState.cityInput}
             onChange={(e) =>
@@ -174,7 +196,11 @@ function VehicleClassification({ activeStep }) {
                 city: e.target.value.replace(/\s+/g, ""), // Keep cleaned version updated
               })
             }
-            className="border rounded px-2 py-1 w-25"
+            className={`border rounded px-2 py-1 w-25 transition-colors duration-300 ${
+              theme === "dark"
+                ? "bg-[#18181b] text-white border-gray-700"
+                : "bg-white text-black border-gray-300"
+            }`}
           >
             <option value="">City</option>
             {statesList.slice(1).map((st) => (
@@ -215,7 +241,7 @@ function VehicleClassification({ activeStep }) {
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded shadow-lg"
+            className="w-full h-[500px] object-contain rounded"
           />
         )}
       </div>

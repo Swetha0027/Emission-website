@@ -32,7 +32,7 @@ export default function ArrowStepper() {
   return (
     <div
       className="arrow-stepper flex flex-col items-center gap-8 p-6"
-      style={{ minHeight: "calc(100vh - 155px)" }}
+      style={{ minHeight: "calc(100vh - 185px)" }}
     >
       {/* Scoped CSS (no styled-jsx) */}
       <style>{`

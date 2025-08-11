@@ -24,7 +24,7 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
-        <form className="flex items-end gap-4 p-4 shadow rounded">
+        <form className="flex items-end gap-4 p-4 rounded">
           <select
             value={ConsumptionAndEmissionState.FuelType}
             onChange={(e) =>
@@ -98,7 +98,7 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded shadow-lg"
+            className="w-full h-[500px] object-contain rounded"
           />
         )}
       </div>
