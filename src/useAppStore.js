@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-// Store for classification, penetration, and traffic volume states
+// Global app store
 const useAppStore = create((set) => ({
   // Classification slice
   classificationState: {
@@ -9,8 +9,9 @@ const useAppStore = create((set) => ({
     city: "",
     cityInput: "",
     classificationFile: null,
-    classificationData: [],
     classificationHeaders: [],
+    classificationData: [],        // filtered
+    allClassificationData: [],     // original
   },
   setClassificationState: (partial) =>
     set((state) => ({
@@ -21,8 +22,9 @@ const useAppStore = create((set) => ({
   penetrationState: {
     projectedYear: "",
     penetrationFile: null,
-    penetrationData: [],
     penetrationHeaders: [],
+    penetrationData: [],           // filtered
+    allPenetrationData: [],        // original
   },
   setPenetrationState: (partial) =>
     set((state) => ({
@@ -42,7 +44,7 @@ const useAppStore = create((set) => ({
       trafficVolumeState: { ...state.trafficVolumeState, ...partial },
     })),
 
-    // ConsumptionAndEmission slice
+  // Consumption & Emission slice
   ConsumptionAndEmission: {
     FuelType: "",
     EmissionType: "",
@@ -53,7 +55,7 @@ const useAppStore = create((set) => ({
       ConsumptionAndEmission: { ...state.ConsumptionAndEmission, ...partial },
     })),
 
-      // GridEmmision slice
+  // Grid Emission slice
   GridEmission: {
     EmissionType: "",
   },
@@ -62,16 +64,16 @@ const useAppStore = create((set) => ({
       GridEmission: { ...state.GridEmission, ...partial },
     })),
 
-    projectedDemandState: {
-      projectedTrafficVolumeFile: null,
-      projectedTrafficVolumeData: [],
-      projectedTrafficVolumeHeaders: []
-    },
-
-    setProjectedDemandState: (partial) =>
-      set((state)=>({
-        projectedDemandState: { ...state.projectedDemandState, ...partial}
-      })),
+  // Projected Demand slice
+  projectedDemandState: {
+    projectedTrafficVolumeFile: null,
+    projectedTrafficVolumeData: [],
+    projectedTrafficVolumeHeaders: [],
+  },
+  setProjectedDemandState: (partial) =>
+    set((state) => ({
+      projectedDemandState: { ...state.projectedDemandState, ...partial },
+    })),
 
   // Theme slice
   theme: "light",

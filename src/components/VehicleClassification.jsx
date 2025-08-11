@@ -30,10 +30,7 @@ function VehicleClassification({ activeStep }) {
     "Projected Demand",
   ];
 
-  // keep original uploaded rows here; never mutate this
-  const [originalData, setOriginalData] = React.useState([]);
-
-  // helper: (re)filter by vehicle type from a source array
+  // filter helper (by first column = vehicle type)
   const filterByVehicle = React.useCallback((rows, vehicleType) => {
     if (!rows || rows.length === 0) return [];
     if (!vehicleType) return rows;
@@ -42,18 +39,20 @@ function VehicleClassification({ activeStep }) {
         row?.[0]?.toString().trim().toLowerCase() ===
         vehicleType.toString().trim().toLowerCase()
     );
-    // fallback to full rows if no match (keeps your previous behavior)
     return filtered.length > 0 ? filtered : rows;
   }, []);
 
-  // re-derive table data whenever city or vehicleType changes (or new file loaded)
+  // Always derive filtered table data from original data
   React.useEffect(() => {
-    const next = filterByVehicle(originalData, classificationState.vehicleType);
+    const next = filterByVehicle(
+      classificationState.allClassificationData,
+      classificationState.vehicleType
+    );
     setClassificationState({ classificationData: next });
   }, [
     classificationState.vehicleType,
-    classificationState.city, // reapply filter when city changes
-    originalData,
+    classificationState.city, // reapply on city switch as requested
+    classificationState.allClassificationData,
     filterByVehicle,
     setClassificationState,
   ]);
@@ -75,15 +74,17 @@ function VehicleClassification({ activeStep }) {
       if (parsed.length > 0) {
         const headers = parsed[0];
         const rows = parsed.slice(1);
-        setClassificationState({ classificationHeaders: headers });
-        setOriginalData(rows); // store raw rows ONLY here
-        // classificationData will be computed by the useEffect above
+        setClassificationState({
+          classificationHeaders: headers,
+          allClassificationData: rows, // store original rows
+          // classificationData is computed by useEffect
+        });
       } else {
         setClassificationState({
           classificationHeaders: [],
+          allClassificationData: [],
           classificationData: [],
         });
-        setOriginalData([]);
       }
     };
 
@@ -92,14 +93,10 @@ function VehicleClassification({ activeStep }) {
   };
 
   return (
-    <div
-      className={`flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300`}
-    >
+    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300">
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
-        <form
-          className={`flex items-end gap-4 p-4 rounded transition-colors duration-300`}
-        >
+        <form className="flex items-end gap-4 p-4 rounded transition-colors duration-300">
           <label
             className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] transition-colors duration-300 ${
               theme === "dark"
@@ -144,10 +141,9 @@ function VehicleClassification({ activeStep }) {
 
           <select
             value={classificationState.vehicleType}
-            onChange={(e) => {
-              // just update the selection; effect will recompute table from originalData
-              setClassificationState({ vehicleType: e.target.value });
-            }}
+            onChange={(e) =>
+              setClassificationState({ vehicleType: e.target.value })
+            }
             disabled={classificationState.city === ""}
             className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
               theme === "dark"
@@ -187,7 +183,7 @@ function VehicleClassification({ activeStep }) {
             onChange={(e) =>
               setClassificationState({
                 cityInput: e.target.value,
-                city: e.target.value.replace(/\s+/g, ""), // keep cleaned version for image key
+                city: e.target.value.replace(/\s+/g, ""), // cleaned for image key
               })
             }
             className={`border rounded px-2 py-1 w-25 transition-colors duration-300 ${
@@ -230,6 +226,7 @@ function VehicleClassification({ activeStep }) {
         )}
       </div>
 
+      {/* Right panel: stepper + city image */}
       <div className="flex flex-col gap-6">
         <div className="ml-4">
           <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
