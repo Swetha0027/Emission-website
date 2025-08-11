@@ -70,6 +70,13 @@ function VehicleTrafficVolume({ activeStep }) {
   const key = city.trim();
   const srcImg = trafficVolumeImages[key];
 
+  // const headers = trafficState.trafficMFTParametersHeaders;      // e.g. ["Tract ID","λ","v_f","Q_m","k_j","w","m","R^2"]
+  // const rows = trafficState.trafficMFTParametersData.map((arr, i) => {
+  //   const obj = { id: i + 1 }; // add an id
+  //   headers.forEach((h, idx) => (obj[h] = arr[idx]));
+  //   return obj;
+  // });
+
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
@@ -123,7 +130,7 @@ function VehicleTrafficVolume({ activeStep }) {
           <img
             src={srcImg}
             alt={city}
-            className="w-full h-[500px] object-contain rounded shadow-lg"
+            className="w-full h-[500px] object-contain rounded"
           />
         ) : null}
         {trafficState.trafficMFTParametersData.length ? (

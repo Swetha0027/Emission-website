@@ -207,7 +207,7 @@ function VehicleClassification({ activeStep }) {
 
         {classificationState.classificationData?.length > 0 ? (
           <div
-            className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark"
+            className="flex-1 min-w-[60%] overflow-auto"
             style={{ minHeight: "500px" }}
           >
             <HotTable
@@ -218,10 +218,13 @@ function VehicleClassification({ activeStep }) {
               height="100%"
               width="100%"
               licenseKey="non-commercial-and-evaluation"
+              themeName={
+                theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+              }
             />
           </div>
         ) : (
-          <div className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark">
+          <div className="flex-1 min-w-[60%] overflow-auto">
             {/* placeholder */}
           </div>
         )}
