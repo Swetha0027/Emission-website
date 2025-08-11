@@ -4,7 +4,7 @@ import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
-
+import { Button } from "@mui/material";
 const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
   const classificationState = useAppStore((state) => state.classificationState);
   const ConsumptionAndEmissionState = useAppStore(
@@ -19,6 +19,7 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
     "Vehicle Energy Consumption and Emission Rates",
     " Grid Emission Rates",
   ];
+  const ageOptions = Array.from({ length: 100 }, (_, i) => i + 1);
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -59,8 +60,7 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
             <option value="PM2.5 Brake Wear">PM2.5 Brake Wear</option>
             <option value="PM2.5 Tire Wear">PM2.5 Tire Wear</option>
           </select>
-
-          <div className="flex flex-col gap-1">
+          {/* <div className="flex flex-col gap-1">
             <label className="text-xs text-gray-600">Vehicle Age</label>
             <input
               type="text"
@@ -73,8 +73,25 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
               className="border rounded px-2 py-1 w-20 h-[32px]"
               placeholder="Enter age in Years..."
             />
-          </div>
-
+          </div> */}
+          <select
+            value={classificationState.VehicleAge}
+            className="border rounded px-2 py-1 w-25 "
+            onChange={(e) =>
+              setConsumptionAndEmissionState({
+                VehicleAge: e.target.value,
+              })
+            }
+          >
+            <option value="" disabled>
+              Vehicle Age
+            </option>
+            {ageOptions.map((st) => (
+              <option key={st} value={st}>
+                {st}
+              </option>
+            ))}
+          </select>
           <select
             value={classificationState.cityInput}
             disabled
@@ -87,6 +104,9 @@ const EnergyConsumptionAndEmissionRates = ({ activeStep }) => {
               </option>
             ))}
           </select>
+          <div>
+            <Button variant="contained">Download</Button>
+          </div>
         </form>
       </div>
 
