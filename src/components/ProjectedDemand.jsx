@@ -13,7 +13,11 @@ import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
 import VehicleStepper from "./VerticalStepper";
-
+import AtlantaTF from "../assets/TrafficVolumeGA.png";
+import LosAngelesTF from "../assets/TrafficVolumeCA.png";
+import SeattleTF from "../assets/TrafficVolumeWA.png";
+import NewYorkTF from "../assets/TrafficVolumeNY.png";
+import TractParametersTable from "./TractParametersTable";
 registerAllModules();
 function ProjectedDemand({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
@@ -21,7 +25,14 @@ function ProjectedDemand({ activeStep }) {
   const penetrationState = useAppStore((s) => s.penetrationState);
   const projectedDemandState = useAppStore((s) => s.projectedDemandState);
   const setProjectedDemandState = useAppStore((s) => s.setProjectedDemandState);
+  const trafficState = useAppStore((s) => s.trafficVolumeState);
 
+  const trafficVolumeImages = {
+    Atlanta: AtlantaTF,
+    "Los Angeles": LosAngelesTF,
+    Seattle: SeattleTF,
+    NewYork: NewYorkTF,
+  };
   const loadSheet = (file, keyHeaders, keyData) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -50,6 +61,11 @@ function ProjectedDemand({ activeStep }) {
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+
+  const city =
+    (classificationState.city ?? classificationState.cityInput) || "";
+  const key = city.trim();
+  const srcImg = trafficVolumeImages[key];
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
@@ -100,6 +116,13 @@ function ProjectedDemand({ activeStep }) {
             ))}
           </select>
         </form>
+        {srcImg ? (
+          <img
+            src={srcImg}
+            alt={city}
+            className="w-full max-h-[350px] ma object-contain rounded"
+          />
+        ) : null}
         {projectedDemandState.projectedTrafficVolumeData.length ? (
           <HotTable
             className="min-w-[60%] overflow-auto"
@@ -118,6 +141,7 @@ function ProjectedDemand({ activeStep }) {
             No data
           </div>
         )}
+        <TractParametersTable trafficState={trafficState} />
       </div>
       <div className="flex flex-col gap-6">
         <VehicleStepper activeStep={activeStep} />
