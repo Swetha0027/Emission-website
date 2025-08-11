@@ -16,6 +16,7 @@ import VehicleStepper from "./VerticalStepper";
 
 registerAllModules();
 function ProjectedDemand({ activeStep }) {
+  const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const penetrationState = useAppStore((s) => s.penetrationState);
   const projectedDemandState = useAppStore((s) => s.projectedDemandState);
@@ -101,16 +102,19 @@ function ProjectedDemand({ activeStep }) {
         </form>
         {projectedDemandState.projectedTrafficVolumeData.length ? (
           <HotTable
-            className="min-w-[60%] overflow-auto ht-theme-main-dark"
+            className="min-w-[60%] overflow-auto"
             style={{ minHeight: 500 }}
             data={projectedDemandState.projectedTrafficVolumeData}
             colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
             rowHeaders
             stretchH="all"
             licenseKey="non-commercial-and-evaluation"
+            themeName={
+              theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+            }
           />
         ) : (
-          <div className="min-w-[60%] ht-theme-main-dark flex items-center justify-center h-[500px] text-gray-500">
+          <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
             No data
           </div>
         )}

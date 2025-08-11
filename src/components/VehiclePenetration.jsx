@@ -17,6 +17,7 @@ import useAppStore from "../useAppStore";
 registerAllModules();
 
 function VehiclePenetration({ activeStep }) {
+  const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const penetrationState = useAppStore((s) => s.penetrationState);
   const setPenetrationState = useAppStore((s) => s.setPenetrationState);
@@ -96,7 +97,7 @@ function VehiclePenetration({ activeStep }) {
           </select>
         </form>
         {penetrationState.penetrationData.length > 0 ? (
-          <div className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark">
+          <div className="flex-1 min-w-[60%] overflow-auto">
             <HotTable
               data={penetrationState.penetrationData}
               colHeaders={penetrationState.penetrationHeaders}
@@ -105,10 +106,13 @@ function VehiclePenetration({ activeStep }) {
               height="auto"
               width="100%"
               licenseKey="non-commercial-and-evaluation"
+              themeName={
+                theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+              }
             />
           </div>
         ) : (
-          <div className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark">
+          <div className="flex-1 min-w-[60%] overflow-auto">
             {/* placeholder table */}
           </div>
         )}

@@ -20,6 +20,7 @@ import NewYorkTF from "../assets/TrafficVolumeNY.png";
 registerAllModules();
 
 function VehicleTrafficVolume({ activeStep }) {
+  const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
@@ -135,16 +136,19 @@ function VehicleTrafficVolume({ activeStep }) {
         ) : null}
         {trafficState.trafficMFTParametersData.length ? (
           <HotTable
-            className="min-w-[60%] overflow-auto ht-theme-main-dark"
+            className="min-w-[60%] overflow-auto"
             style={{ minHeight: 500 }}
             data={trafficState.trafficMFTParametersData}
             colHeaders={trafficState.trafficMFTParametersHeaders}
             rowHeaders
             stretchH="all"
             licenseKey="non-commercial-and-evaluation"
+            themeName={
+              theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+            }
           />
         ) : (
-          <div className="min-w-[60%] ht-theme-main-dark flex items-center justify-center h-[500px] text-gray-500">
+          <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
             No data
           </div>
         )}
