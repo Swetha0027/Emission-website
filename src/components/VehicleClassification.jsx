@@ -29,80 +29,71 @@ function VehicleClassification({ activeStep }) {
     "Traffic Volume and Speed",
     "Projected Demand",
   ];
-  const [AllData, setAllData] = React.useState([]);
+
+  // keep original uploaded rows here; never mutate this
+  const [originalData, setOriginalData] = React.useState([]);
+
+  // helper: (re)filter by vehicle type from a source array
+  const filterByVehicle = React.useCallback((rows, vehicleType) => {
+    if (!rows || rows.length === 0) return [];
+    if (!vehicleType) return rows;
+    const filtered = rows.filter(
+      (row) =>
+        row?.[0]?.toString().trim().toLowerCase() ===
+        vehicleType.toString().trim().toLowerCase()
+    );
+    // fallback to full rows if no match (keeps your previous behavior)
+    return filtered.length > 0 ? filtered : rows;
+  }, []);
+
+  // re-derive table data whenever city or vehicleType changes (or new file loaded)
+  React.useEffect(() => {
+    const next = filterByVehicle(originalData, classificationState.vehicleType);
+    setClassificationState({ classificationData: next });
+  }, [
+    classificationState.vehicleType,
+    classificationState.city, // reapply filter when city changes
+    originalData,
+    filterByVehicle,
+    setClassificationState,
+  ]);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setClassificationState({ classificationFile: file });
-    const reader = new FileReader();
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    setClassificationState({ classificationFile: file });
+
+    const reader = new FileReader();
     reader.onload = (evt) => {
       const data = evt.target.result;
-      let workbook;
-      if (file.name.endsWith(".csv")) {
-        workbook = XLSX.read(data, { type: "string" });
-      } else {
-        workbook = XLSX.read(data, { type: "binary" });
-      }
+      const isCSV = file.name.toLowerCase().endsWith(".csv");
+      const workbook = XLSX.read(data, { type: isCSV ? "string" : "binary" });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const parsedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      if (parsedData.length > 0) {
-        setClassificationState({
-          classificationHeaders: parsedData[0],
-          classificationData: parsedData.slice(1),
-        });
-        setAllData(parsedData.slice(1));
-        console.log("Classification Data:", parsedData.slice(1));
+      const parsed = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) || [];
+
+      if (parsed.length > 0) {
+        const headers = parsed[0];
+        const rows = parsed.slice(1);
+        setClassificationState({ classificationHeaders: headers });
+        setOriginalData(rows); // store raw rows ONLY here
+        // classificationData will be computed by the useEffect above
       } else {
         setClassificationState({
           classificationHeaders: [],
           classificationData: [],
         });
-        setAllData([]);
+        setOriginalData([]);
       }
     };
 
-    if (file.name.endsWith(".csv")) reader.readAsText(file);
+    if (file.name.toLowerCase().endsWith(".csv")) reader.readAsText(file);
     else reader.readAsBinaryString(file);
-  };
-
-  const handleVehicleChange = (selectedVehicleType) => {
-    console.log("Selected Vehicle Type:", selectedVehicleType);
-
-    if (selectedVehicleType === "" || !selectedVehicleType) {
-      setClassificationState((prevState) => ({
-        ...prevState,
-        classificationData: [],
-      }));
-    } else {
-      let filteredData = AllData.filter(
-        (row) =>
-          row[0].toString().trim().toLowerCase() ===
-          selectedVehicleType.toString().trim().toLowerCase()
-      );
-
-      console.log("Filtered Data:", filteredData);
-
-      if (filteredData.length === 0) {
-        setClassificationState({
-          classificationData: AllData,
-        });
-      } else {
-        setClassificationState({
-          classificationData: filteredData,
-        });
-      }
-
-      console.log(
-        "Updated Classification Data:",
-        classificationState.classificationData
-      );
-    }
   };
 
   return (
     <div
-      className={`flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300 `}
+      className={`flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300`}
     >
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
@@ -126,6 +117,7 @@ function VehicleClassification({ activeStep }) {
               className="hidden"
             />
           </label>
+
           <div className="flex flex-col gap-1">
             <label
               className={`text-xs ${
@@ -149,11 +141,12 @@ function VehicleClassification({ activeStep }) {
               placeholder="202#"
             />
           </div>
+
           <select
             value={classificationState.vehicleType}
             onChange={(e) => {
+              // just update the selection; effect will recompute table from originalData
               setClassificationState({ vehicleType: e.target.value });
-              handleVehicleChange(classificationState.vehicleType);
             }}
             disabled={classificationState.city === ""}
             className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
@@ -188,12 +181,13 @@ function VehicleClassification({ activeStep }) {
             </option>
             <option value="Transit Bus">Transit Bus</option>
           </select>
+
           <select
             value={classificationState.cityInput}
             onChange={(e) =>
               setClassificationState({
                 cityInput: e.target.value,
-                city: e.target.value.replace(/\s+/g, ""), // Keep cleaned version updated
+                city: e.target.value.replace(/\s+/g, ""), // keep cleaned version for image key
               })
             }
             className={`border rounded px-2 py-1 w-25 transition-colors duration-300 ${
@@ -211,7 +205,7 @@ function VehicleClassification({ activeStep }) {
           </select>
         </form>
 
-        {classificationState.classificationData.length > 0 ? (
+        {classificationState.classificationData?.length > 0 ? (
           <div
             className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark"
             style={{ minHeight: "500px" }}
@@ -228,7 +222,7 @@ function VehicleClassification({ activeStep }) {
           </div>
         ) : (
           <div className="flex-1 min-w-[60%] overflow-auto ht-theme-main-dark">
-            {/* placeholder table */}
+            {/* placeholder */}
           </div>
         )}
       </div>
