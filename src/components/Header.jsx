@@ -20,7 +20,7 @@ const Header = () => {
         backgroundPosition: "center",
       }}
     >
-      <Link to={"/"}>
+      <Link to={"/"} reloadDocument>
         <IconButton aria-label="home">
           <HomeIcon
             className={`${
