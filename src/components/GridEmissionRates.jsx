@@ -97,7 +97,7 @@ const GridEmissionRates = ({ activeStep }) => {
             </List>
           </CardContent>
         </Card>
-        <form className="flex items-end gap-4 p-4 shadow rounded">
+        <form className="flex items-end gap-4 p-4 rounded">
           <select
             value={GridEmissionState.EmissionType}
             onChange={(e) =>
@@ -143,7 +143,7 @@ const GridEmissionRates = ({ activeStep }) => {
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded shadow-lg"
+            className="w-full h-[500px] object-contain rounded"
           />
         )}
       </div>

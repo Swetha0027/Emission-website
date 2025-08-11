@@ -46,7 +46,7 @@ const Header = () => {
       <div className="flex flex-col items-center gap-4">
         <Link
           to={"/signin"}
-          className={`font-semibold py-1 px-4 rounded-md border shadow-sm transition-colors duration-300 ${
+          className={`font-semibold py-1 px-4 rounded-md border transition-colors duration-300 ${
             theme === "dark"
               ? "bg-[#18181b] text-white border-white"
               : "bg-white text-black border-black"

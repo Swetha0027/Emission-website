@@ -84,7 +84,7 @@ const Notifications = () => {
         <div
           id="notifications-menu"
           role="menu"
-          className={`absolute left-0 right-0 mt-1 rounded-md border shadow-lg z-50 transition-colors duration-300 ${menuTheme}`}
+          className={`absolute left-0 right-0 mt-1 rounded-md border z-50 transition-colors duration-300 ${menuTheme}`}
         >
           <ul className="max-h-80 overflow-auto py-1">
             {STATIC_NOTIFICATIONS.map((n) => (

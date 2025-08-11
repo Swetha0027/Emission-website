@@ -103,7 +103,7 @@ function VehicleClassification({ activeStep }) {
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
-        <form className="flex items-end gap-4 p-4 shadow rounded">
+        <form className="flex items-end gap-4 p-4 rounded">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
             <span className="mr-2">Upload</span> Vehicle Classification
             <CloudUpload className="ml-2 w-5 h-5" />
@@ -215,7 +215,7 @@ function VehicleClassification({ activeStep }) {
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded shadow-lg"
+            className="w-full h-[500px] object-contain rounded"
           />
         )}
       </div>
