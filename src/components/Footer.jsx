@@ -7,7 +7,7 @@ const Footer = () => {
         <img
           src="src/assets/futra-logo.png"
           alt="Futra Lab"
-          style={{ width: "120px", height: "auto" }}
+          style={{ width: "180px", height: "auto" }}
         />
       </div>
       <div className="flex items-center">

@@ -33,7 +33,7 @@ const App = () => {
 
         {/* Fixed Footer */}
         <div
-          className="fixed bottom-0 left-0 right-0 h-[56px] box-border z-[1000]
+          className="fixed bottom-0 left-0 right-0 max-h-[160px] box-border z-[1000]
                     bg-white/80 dark:bg-gray-900/80 backdrop-blur
                     border-t border-gray-200 dark:border-gray-800"
         >
