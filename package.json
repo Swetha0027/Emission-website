@@ -15,7 +15,8 @@
     "@handsontable/react": "^15.3.0",
     "@handsontable/react-wrapper": "^15.3.0",
     "@mui/icons-material": "^7.2.0",
-    "@mui/material": "^7.2.0",
+    "@mui/material": "^7.3.1",
+    "@mui/x-data-grid": "^8.10.0",
     "@tailwindcss/vite": "^4.1.8",
     "handsontable": "^15.3.0",
     "lucide-react": "^0.515.0",
@@ -23,6 +24,7 @@
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.60.0",
     "react-router-dom": "^7.6.3",
+    "react-select": "^5.10.2",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.6"
   },

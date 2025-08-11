@@ -13,7 +13,10 @@ import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
 import VehicleStepper from "./VerticalStepper";
-
+import AtlantaTF from "../assets/TrafficVolumeGA.png";
+import LosAngelesTF from "../assets/TrafficVolumeCA.png";
+import SeattleTF from "../assets/TrafficVolumeWA.png";
+import NewYorkTF from "../assets/TrafficVolumeNY.png";
 registerAllModules();
 
 function VehicleTrafficVolume({ activeStep }) {
@@ -23,6 +26,12 @@ function VehicleTrafficVolume({ activeStep }) {
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+  const trafficVolumeImages = {
+    Atlanta: AtlantaTF,
+    "Los Angeles": LosAngelesTF,
+    Seattle: SeattleTF,
+    NewYork: NewYorkTF,
+  };
   const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
@@ -55,6 +64,11 @@ function VehicleTrafficVolume({ activeStep }) {
         : "trafficMFTParametersFile"]: file,
     });
   };
+
+  const city =
+    (classificationState.city ?? classificationState.cityInput) || "";
+  const key = city.trim();
+  const srcImg = trafficVolumeImages[key];
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -105,6 +119,13 @@ function VehicleTrafficVolume({ activeStep }) {
             ))}
           </select>
         </form>
+        {srcImg ? (
+          <img
+            src={srcImg}
+            alt={city}
+            className="w-full h-[500px] object-contain rounded shadow-lg"
+          />
+        ) : null}
         {trafficState.trafficMFTParametersData.length ? (
           <HotTable
             className="min-w-[60%] overflow-auto ht-theme-main-dark"
