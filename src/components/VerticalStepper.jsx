@@ -1,29 +1,43 @@
 // VehicleStepper.jsx
 import React from "react";
-import {
-  Stepper,
-  Step,
-  StepLabel,
-  StepConnector,
-  styled,
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import StepConnector, {
   stepConnectorClasses,
-} from "@mui/material";
+} from "@mui/material/StepConnector";
+import { styled } from "@mui/material/styles";
 import useAppStore from "../useAppStore";
 
+// Connector colored per theme (vertical uses a left border)
 const QontoConnector = styled(StepConnector, {
   shouldForwardProp: (prop) => prop !== "isDark",
 })(({ isDark }) => ({
-  [`&.${stepConnectorClasses.alternativeLabel}`]: {
-    top: 10,
-    left: "calc(-50% + 8px)",
-    right: "calc(50% + 8px)",
-  },
-  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line}`]: {
-    borderColor: isDark ? "rgba(255,255,255,0.8)" : "#0a2f5c",
-  },
   [`& .${stepConnectorClasses.line}`]: {
-    borderLeft: `2px solid ${isDark ? "rgba(255,255,255,0.45)" : "#0a2f5c"}`,
+    borderLeftWidth: 2,
+    borderLeftStyle: "solid",
+    borderLeftColor: isDark ? "rgba(255,255,255,0.45)" : "#0a2f5c",
     minHeight: 32,
+  },
+  [`&.${stepConnectorClasses.active} .${stepConnectorClasses.line},
+    &.${stepConnectorClasses.completed} .${stepConnectorClasses.line}`]: {
+    borderLeftColor: isDark ? "rgba(255,255,255,0.8)" : "#0a2f5c",
+  },
+}));
+
+// StepLabel with themed text color (works reliably in v5/v6)
+const ThemedStepLabel = styled(StepLabel, {
+  shouldForwardProp: (prop) => prop !== "isDark",
+})(({ isDark }) => ({
+  "& .MuiStepLabel-label": {
+    color: isDark ? "#fff" : "#0a2f5c",
+    fontWeight: 500,
+  },
+  "& .MuiStepLabel-label.Mui-active, & .MuiStepLabel-label.Mui-completed": {
+    color: isDark ? "#fff" : "#0a2f5c",
+  },
+  "& .MuiStepLabel-label.Mui-disabled": {
+    color: isDark ? "rgba(255,255,255,0.6)" : "rgba(10,47,92,0.6)",
   },
 }));
 
@@ -31,28 +45,30 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
   const theme = useAppStore((s) => s.theme);
   const isDark = theme === "dark";
 
-  const labelColor = isDark ? "#ffffff" : "#0a2f5c";
-  const iconActive = isDark ? "#ffffff" : "#0a2f5c";
+  const iconActive = isDark ? "#fff" : "#0a2f5c";
   const iconInactive = isDark ? "rgba(255,255,255,0.6)" : "#0a2f5c";
 
   return (
     <Stepper
+      key={theme} // force remount on mode change so connector recolors instantly
       activeStep={activeStep}
       orientation="vertical"
       connector={<QontoConnector isDark={isDark} />}
       sx={{ alignItems: "flex-start" }}
     >
-      {steps.map((label, index) => {
-        const isActive = index === activeStep;
+      {steps.map((label, idx) => {
+        const isActive = idx === activeStep;
         return (
-          <Step key={label}>
-            <StepLabel
+          <Step key={`${label}-${theme}`}>
+            <ThemedStepLabel
+              isDark={isDark}
               icon={
                 isActive ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
                     height="24"
+                    aria-hidden="true"
                   >
                     <path d="M0 0h24v24H0z" fill="none" />
                     <path
@@ -65,6 +81,7 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
                     height="24"
+                    aria-hidden="true"
                   >
                     <path d="M0 0h24v24H0z" fill="none" />
                     <path
@@ -74,15 +91,9 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
                   </svg>
                 )
               }
-              sx={{
-                ".MuiStepLabel-label": {
-                  color: labelColor,
-                  fontWeight: 500,
-                },
-              }}
             >
               {label}
-            </StepLabel>
+            </ThemedStepLabel>
           </Step>
         );
       })}

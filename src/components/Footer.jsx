@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bg-white px-8 py-4 flex justify-between items-center z-[100]">
+    <footer className="bg-white px-8 py-4 flex justify-between items-center z-[1000]">
       <div className="flex items-center">
         <img
           src="src/assets/futra-logo.png"
