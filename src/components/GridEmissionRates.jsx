@@ -136,8 +136,13 @@ const GridEmissionRates = ({ activeStep }) => {
       </div>
 
       <div className="flex flex-col gap-6">
-        <div className="ml-4">
+        <div className="ml-4 flex items-center gap-4">
           <VehicleStepper activeStep={activeStep} steps={steps} />
+          <img
+            src="src/assets/Logo2.jpg"
+            alt="NREL Cambium"
+            style={{ width: "120px", height: "auto" }}
+          />
         </div>
         {classificationState.city && cityImages[classificationState.city] && (
           <img

@@ -21,11 +21,15 @@ const Header = () => {
       }}
     >
       <Link to={"/"}>
-        <img
-          src="src/assets/Logo2.jpg"
-          alt="Kennesaw State University"
-          style={{ width: "120px", height: "auto" }}
-        />
+        <IconButton aria-label="home">
+          <HomeIcon
+            className={`${
+              theme === "dark"
+                ? "bg-[#163e73] text-white"
+                : "bg-[#e3f0ff] text-black"
+            }`}
+          />
+        </IconButton>
       </Link>
 
       <div className="flex flex-col items-center gap-4">
