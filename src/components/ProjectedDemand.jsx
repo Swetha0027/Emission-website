@@ -1,24 +1,53 @@
+  // Helper to convert table data to CSV string
+  function arrayToCSV(headers, rows) {
+    const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
+    const csvRows = [headers.map(escape).join(",")];
+    for (const row of rows) {
+      csvRows.push(row.map(escape).join(","));
+    }
+    return csvRows.join("\n");
+  }
+
   // Send data to backend on Next
   const handleNext = async () => {
-    // Send all relevant data to backend
-    const payload = {
-      city: classificationState.city,
-      base_year: classificationState.baseYear,
-      vehicle_type: classificationState.vehicleType,
-      projected_table_data: projectedState.allProjectedData,
-      projected_table_headers: projectedState.projectedHeaders,
+    // Collect values
+    const city = classificationState.city || '';
+  // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
+  let year = penetrationState.projectedYear || classificationState.baseYear || '';
+    const file = projectedDemandState.projectedTrafficVolumeFile || null;
+    const headers = projectedDemandState.projectedTrafficVolumeHeaders || [];
+    const data = projectedDemandState.projectedTrafficVolumeData || [];
+    // Convert table to CSV string
+    const csvString = headers.length && data.length ? arrayToCSV(headers, data) : '';
+    // Store all in a variable
+    const values = {
+      city,
+      year,
+      file,
+      csv: csvString,
     };
+    // Print in console
+    console.log('Projected Demand upload values:', {
+      ...values,
+      file: file ? file.name : null,
+    });
+
+    // Prepare FormData for backend
+    const formData = new FormData();
+    formData.append('city', city);
+    formData.append('year', year);
+    if (file) formData.append('file', file);
+    if (csvString) formData.append('csv', new Blob([csvString], { type: 'text/csv' }), 'table.csv');
+
     try {
-  const res = await fetch('http://localhost:5000/upload/projected_traffic', {
+      const res = await fetch('http://127.0.0.1:5000/upload/projected_traffic', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-      console.log('Backend response:', data);
+      const respData = await res.json();
+      console.log('Backend response:', respData);
       toast.success("Data uploaded successfully!");
-      // Optionally show a message or move to next page
     } catch (err) {
       toast.error('Upload failed: ' + err.message);
     }
@@ -60,6 +89,16 @@ function ProjectedDemand({ activeStep }) {
     Seattle: SeattleTF,
     NewYork: NewYorkTF,
   };
+  // Helper to convert table data to CSV string
+  function arrayToCSV(headers, rows) {
+    const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
+    const csvRows = [headers.map(escape).join(",")];
+    for (const row of rows) {
+      csvRows.push(row.map(escape).join(","));
+    }
+    return csvRows.join("\n");
+  }
+
   const loadSheet = (file, keyHeaders, keyData) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -69,12 +108,29 @@ function ProjectedDemand({ activeStep }) {
         : XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const parsed = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      if (parsed.length)
+      if (parsed.length) {
         setProjectedDemandState({
           [keyHeaders]: parsed[0],
           [keyData]: parsed.slice(1),
         });
-      else setProjectedDemandState({ [keyHeaders]: [], [keyData]: [] });
+        // Print variable in console after upload
+        const city = classificationState.city || '';
+        // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
+        let year = penetrationState.projectedYear || classificationState.baseYear || '';
+        const csvString = arrayToCSV(parsed[0], parsed.slice(1));
+        const values = {
+          city,
+          year,
+          file,
+          csv: csvString,
+        };
+        console.log('Projected Demand upload values (after upload):', {
+          ...values,
+          file: file ? file.name : null,
+        });
+      } else {
+        setProjectedDemandState({ [keyHeaders]: [], [keyData]: [] });
+      }
     };
     file.name.endsWith(".csv")
       ? reader.readAsText(file)

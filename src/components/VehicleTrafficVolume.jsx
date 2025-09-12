@@ -1,24 +1,31 @@
   // Send data to backend on Next
   const handleNext = async () => {
-    // Send all relevant data to backend
-    const payload = {
-      city: classificationState.city,
-      base_year: classificationState.baseYear,
-      vehicle_type: classificationState.vehicleType,
-      traffic_table_data: trafficState.allTrafficData,
-      traffic_table_headers: trafficState.trafficHeaders,
+    // Collect values
+    const city = (classificationState.city ?? classificationState.cityInput) || '';
+    const trafficVolumeFile = trafficState.trafficVolumeFile || null;
+    const mftParametersFile = trafficState.trafficMFTParametersFile || null;
+    const values = {
+      city,
+      trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
+      mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
     };
+    console.log('Traffic Volume and Speed upload values (on Next):', values);
+
+    // Prepare FormData for backend
+    const formData = new FormData();
+    formData.append('city', city);
+    if (trafficVolumeFile) formData.append('traffic_volume_file', trafficVolumeFile);
+    if (mftParametersFile) formData.append('mft_parameters_file', mftParametersFile);
+
     try {
-  const res = await fetch('http://localhost:5000/upload/traffic_volume', {
+      const res = await fetch('http://127.0.0.1:5000/upload/traffic_volume_speed', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
       console.log('Backend response:', data);
       toast.success("Data uploaded successfully!");
-      // Optionally show a message or move to next page
     } catch (err) {
       toast.error('Upload failed: ' + err.message);
     }
@@ -69,7 +76,7 @@ function VehicleTrafficVolume({ activeStep }) {
     "Projected Demand",
   ];
 
-  const loadSheet = (file, keyHeaders, keyData) => {
+  const loadSheet = (file, type) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target.result;
@@ -78,21 +85,37 @@ function VehicleTrafficVolume({ activeStep }) {
         : XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const parsed = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      if (parsed.length)
-        setTrafficState({
-          [keyHeaders]: parsed[0],
-          [keyData]: parsed.slice(1),
-        });
-      else setTrafficState({ [keyHeaders]: [], [keyData]: [] });
+      if (type === "trafficVolume") {
+        if (parsed.length)
+          setTrafficState({
+            trafficVolumeHeaders: parsed[0],
+            trafficVolumeData: parsed.slice(1),
+            trafficVolumeFile: file,
+          });
+        else setTrafficState({ trafficVolumeHeaders: [], trafficVolumeData: [], trafficVolumeFile: file });
+      } else if (type === "mftParameters") {
+        if (parsed.length)
+          setTrafficState({
+            trafficMFTParametersHeaders: parsed[0],
+            trafficMFTParametersData: parsed.slice(1),
+            trafficMFTParametersFile: file,
+          });
+        else setTrafficState({ trafficMFTParametersHeaders: [], trafficMFTParametersData: [], trafficMFTParametersFile: file });
+      }
+      // Print variable in console after upload
+      const city = (classificationState.city ?? classificationState.cityInput) || '';
+      const trafficVolumeFile = type === 'trafficVolume' ? file : trafficState.trafficVolumeFile;
+      const mftParametersFile = type === 'mftParameters' ? file : trafficState.trafficMFTParametersFile;
+      const values = {
+        city,
+        trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
+        mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
+      };
+      console.log('Traffic Volume and Speed upload values (after upload):', values);
     };
     file.name.endsWith(".csv")
       ? reader.readAsText(file)
       : reader.readAsBinaryString(file);
-    setTrafficState({
-      [file === trafficState.trafficVolumeFile
-        ? "trafficVolumeFile"
-        : "trafficMFTParametersFile"]: file,
-    });
   };
 
   // Calculate speed when user clicks the button
@@ -120,8 +143,8 @@ function VehicleTrafficVolume({ activeStep }) {
   const key = city.trim();
   const srcImg = trafficVolumeImages[key];
 
-  const hasData =
-    (trafficState.trafficMFTParametersData && trafficState.trafficMFTParametersData.length > 0);
+  const hasTrafficVolumeData = trafficState.trafficVolumeData && trafficState.trafficVolumeData.length > 0;
+  const hasMFTParametersData = trafficState.trafficMFTParametersData && trafficState.trafficMFTParametersData.length > 0;
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -134,11 +157,7 @@ function VehicleTrafficVolume({ activeStep }) {
               type="file"
               accept=".xlsx,.xls,.csv"
               onChange={(e) =>
-                loadSheet(
-                  e.target.files[0],
-                  "trafficMFTParametersHeaders",
-                  "trafficMFTParametersData"
-                )
+                loadSheet(e.target.files[0], "trafficVolume")
               }
               className="hidden"
             />
@@ -150,11 +169,7 @@ function VehicleTrafficVolume({ activeStep }) {
               type="file"
               accept=".xlsx,.xls,.csv"
               onChange={(e) =>
-                loadSheet(
-                  e.target.files[0],
-                  "trafficMFTParametersHeaders",
-                  "trafficMFTParametersData"
-                )
+                loadSheet(e.target.files[0], "mftParameters")
               }
               className="hidden"
             />
@@ -172,7 +187,7 @@ function VehicleTrafficVolume({ activeStep }) {
             ))}
           </select>
         </form>
-        {hasData && (
+        {(hasTrafficVolumeData || hasMFTParametersData) && (
           <>
             {/*
             <button
@@ -189,6 +204,54 @@ function VehicleTrafficVolume({ activeStep }) {
                 className="w-full max-h-[350px] ma object-contain rounded"
               />
             ) : null}
+            {/* Table for Traffic Volume */}
+            {hasTrafficVolumeData && (
+              <div className="overflow-auto max-h-96 mt-4">
+                <div className="font-semibold text-lg mb-2">Traffic Volume Table</div>
+                <table className="border w-full">
+                  <thead>
+                    <tr>
+                      {trafficState.trafficVolumeHeaders && trafficState.trafficVolumeHeaders.map((header, idx) => (
+                        <th key={idx} className="border px-2 py-1 bg-gray-100">{header}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trafficState.trafficVolumeData.map((row, rowIdx) => (
+                      <tr key={rowIdx}>
+                        {row.map((cell, cellIdx) => (
+                          <td key={cellIdx} className="border px-2 py-1">{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {/* Table for MFT Parameters */}
+            {hasMFTParametersData && (
+              <div className="overflow-auto max-h-96 mt-4">
+                <div className="font-semibold text-lg mb-2">MFT Parameters Table</div>
+                <table className="border w-full">
+                  <thead>
+                    <tr>
+                      {trafficState.trafficMFTParametersHeaders && trafficState.trafficMFTParametersHeaders.map((header, idx) => (
+                        <th key={idx} className="border px-2 py-1 bg-gray-100">{header}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trafficState.trafficMFTParametersData.map((row, rowIdx) => (
+                      <tr key={rowIdx}>
+                        {row.map((cell, cellIdx) => (
+                          <td key={cellIdx} className="border px-2 py-1">{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             {/* Show calculated speeds if available */}
             {calculatedSpeeds.length > 0 && (
               <table className="mt-4 border w-full">

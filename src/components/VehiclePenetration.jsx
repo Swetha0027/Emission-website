@@ -58,21 +58,51 @@ function VehiclePenetration({ activeStep }) {
 
 
   // Send data to backend on Next
-  const handleNext = async () => {
-    // Send all relevant data to backend
-    const payload = {
-      city: classificationState.city,
-      base_year: classificationState.baseYear,
-      vehicle_type: classificationState.vehicleType,
-      projected_year: penetrationState.projectedYear,
-      penetration_table_data: penetrationState.allPenetrationData,
-      penetration_table_headers: penetrationState.penetrationHeaders,
+  // Helper to print the current values and file in the console
+  const printPenetrationValues = React.useCallback(() => {
+    const values = {
+      city: classificationState.city || '',
+      base_year: classificationState.baseYear || '',
+      vehicle_type: classificationState.vehicleType || '',
+      projected_year: penetrationState.projectedYear || '',
+      user_id: classificationState.userId || '',
+      file: penetrationState.penetrationFile || null,
     };
+    console.log('Penetration upload values:', {
+      ...values,
+      file: values.file ? values.file.name : null,
+    });
+  }, [classificationState.city, classificationState.baseYear, classificationState.vehicleType, classificationState.userId, penetrationState.projectedYear, penetrationState.penetrationFile]);
+
+  // Print values whenever file or any value changes
+  React.useEffect(() => {
+    printPenetrationValues();
+  }, [printPenetrationValues]);
+
+  const handleNext = async () => {
+    // Combine all values and file data into a single variable
+    const values = {
+      city: classificationState.city || '',
+      base_year: classificationState.baseYear || '',
+      vehicle_type: classificationState.vehicleType || '',
+      projected_year: penetrationState.projectedYear || '',
+      user_id: classificationState.userId || '',
+      file: penetrationState.penetrationFile || null,
+    };
+
+    // Prepare FormData for backend (file upload)
+    const formData = new FormData();
+    formData.append('city', values.city);
+    formData.append('base_year', values.base_year);
+    formData.append('vehicle_type', values.vehicle_type);
+    formData.append('projected_year', values.projected_year);
+    if (values.user_id) formData.append('user_id', values.user_id);
+    if (values.file) formData.append('file', values.file);
+
     try {
-  const res = await fetch('http://localhost:5000/upload/penetration_rate', {
+      const res = await fetch('http://localhost:5000/upload/penetration_rate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
