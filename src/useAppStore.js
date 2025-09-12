@@ -21,12 +21,14 @@ const useAppStore = create((set, get) => ({
     classificationHeaders: [],
     classificationData: [],     // filtered
     allClassificationData: [],  // original
+    transactionId: null,
   },
   setClassificationState: (partial) =>
     set((state) => ({
       classificationState: { ...state.classificationState, ...partial },
     })),
 
+    
   // ------------------------------
   // Penetration slice
   // ------------------------------

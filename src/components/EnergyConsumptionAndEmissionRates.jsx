@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import useAppStore from "../useAppStore";
 import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
@@ -61,8 +61,6 @@ const EMISSION_TYPES = [
   { label: "PM2.5 Tire Wear", unit: "g/mi" },
 ];
 
-const SPEEDS = [5, 10, 20, 30, 40, 50, 60, 70];
-
 function getRandomColor(idx) {
   // Generate visually distinct colors
   const colors = [
@@ -73,41 +71,145 @@ function getRandomColor(idx) {
   return colors[idx % colors.length];
 }
 
-// Dummy data generator for each emission type
-function generateDummyData(emissionType) {
-  if (emissionType === "Energy Rate") {
-    // Lower values for energy, similar to your sample
-    return VEHICLE_TYPES.map((vehicleType, idx) => ({
-      label: vehicleType,
-      data: SPEEDS.map(
-        (speed) =>
-          0.025 / (speed / 10 + 1) + Math.random() * 0.002 // curve, small noise
-      ),
-      borderColor: getRandomColor(idx),
-      backgroundColor: "rgba(0,0,0,0)",
-      tension: 0.3,
-      pointRadius: 1.5,
-    }));
-  }
-  // Default: CO2 Emissions (higher values)
-  return VEHICLE_TYPES.map((vehicleType, idx) => ({
-    label: vehicleType,
-    data: SPEEDS.map(
-      (speed) =>
-        6000 / (speed / 10 + 1) + Math.random() * 200 // curve, small noise
-    ),
-    borderColor: getRandomColor(idx),
-    backgroundColor: "rgba(0,0,0,0)",
-    tension: 0.3,
-    pointRadius: 1.5,
-  }));
-}
-
 export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   // Store slices
   const classificationState = useAppStore((s) => s.classificationState);
   const ConsumptionAndEmissionState = useAppStore((s) => s.ConsumptionAndEmission);
   const setConsumptionAndEmissionState = useAppStore((s) => s.setConsumptionAndEmission);
+
+  // State for real chart data
+  const [updateCounter, setUpdateCounter] = useState(0);
+  const [currentUnit, setCurrentUnit] = useState("units");
+
+  // State to hold all received vehicle data
+  const [vehicleData, setVehicleData] = useState({});
+
+  // Ref for potential direct chart manipulation (future use)
+  // const chartRef = useRef(null);
+
+  // State for chart data
+  const [co2ChartData, setCo2ChartData] = useState({
+    labels: [],
+    datasets: [{
+      label: "No Data Yet",
+      data: [],
+      borderColor: "#ccc",
+      backgroundColor: "rgba(0,0,0,0)",
+      tension: 0.3,
+      pointRadius: 2,
+    }],
+  });
+  const [energyChartData, setEnergyChartData] = useState({
+    labels: [],
+    datasets: [{
+      label: "No Data Yet", 
+      data: [],
+      borderColor: "#ccc",
+      backgroundColor: "rgba(0,0,0,0)",
+      tension: 0.3,
+      pointRadius: 2,
+    }],
+  });
+
+  // useEffect to update chart data when vehicleData changes
+  useEffect(() => {
+    const vehicleColorMap = VEHICLE_TYPES.reduce((acc, type, idx) => {
+      acc[type] = getRandomColor(idx);
+      return acc;
+    }, {});
+
+    const energyDatasets = [];
+    const co2Datasets = [];
+    let unit = "units";
+
+    Object.entries(vehicleData).forEach(([vehicleType, data]) => {
+      // Handle the nested data structure from your backend
+      let actualData = data;
+      
+      // Check if data has the nested "0" structure
+      if (data && data["0"] && !data.results) {
+        actualData = data["0"];
+      }
+      
+      if (!actualData || !actualData.results) {
+        return;
+      }
+
+      const results = actualData.results;
+      const dataPoints = results.map(r => ({ x: r.speed, y: r.prediction }));
+
+      const newDataset = {
+        label: vehicleType,
+        data: dataPoints,
+        borderColor: vehicleColorMap[vehicleType] || "#000",
+        backgroundColor: "rgba(0,0,0,0)",
+        tension: 0.3,
+        pointRadius: 2,
+        parsing: {
+          xAxisKey: 'x',
+          yAxisKey: 'y'
+        }
+      };
+
+      // Use prediction_type from backend instead of emissionType
+      const predictionType = actualData.prediction_type || data.emissionType || "CO2 Emissions";
+
+      if (predictionType === "Energy Rate") {
+        energyDatasets.push(newDataset);
+      } else {
+        // All CO2 Emissions and other types go to CO2 chart
+        co2Datasets.push(newDataset);
+      }
+
+      // Get unit from the nested structure
+      if (actualData.unit) unit = actualData.unit;
+    });
+
+    // Update current unit
+    setCurrentUnit(unit);
+
+    // Handle empty data case
+    if (energyDatasets.length === 0) {
+      setEnergyChartData({
+        labels: [],
+        datasets: [{
+          label: "No Data Available",
+          data: [],
+          borderColor: "#ccc",
+          backgroundColor: "rgba(0,0,0,0)",
+          tension: 0.3,
+          pointRadius: 2,
+        }],
+      });
+    } else {
+      setEnergyChartData({
+        labels: [], // Not needed for scatter plots
+        datasets: energyDatasets,
+      });
+    }
+
+    if (co2Datasets.length === 0) {
+      setCo2ChartData({
+        labels: [],
+        datasets: [{
+          label: "No Data Available",
+          data: [],
+          borderColor: "#ccc", 
+          backgroundColor: "rgba(0,0,0,0)",
+          tension: 0.3,
+          pointRadius: 2,
+        }],
+      });
+    } else {
+      setCo2ChartData({
+        labels: [], // Not needed for scatter plots
+        datasets: co2Datasets,
+      });
+    }
+
+    // Increment update counter to force chart re-render
+    setUpdateCounter(prev => prev + 1);
+  }, [vehicleData]);
 
   // UI lists & lookups
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
@@ -135,19 +237,11 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   const emissionType = ConsumptionAndEmissionState.EmissionType || "";
   const vehicleAge = ConsumptionAndEmissionState.VehicleAge || "";
 
-  // Find unit for selected emission type
-  const emissionMeta = EMISSION_TYPES.find((e) => e.label === emissionType) || EMISSION_TYPES[0];
-
-  // Prepare dummy chart data for both emission types
-  const energyChartData = useMemo(() => ({
-    labels: SPEEDS,
-    datasets: generateDummyData("Energy Rate"),
-  }), [fuelType, vehicleAge]);
-
-  const co2ChartData = useMemo(() => ({
-    labels: SPEEDS,
-    datasets: generateDummyData("CO2 Emissions"),
-  }), [fuelType, vehicleAge]);
+  // Prepare chart data
+  // const energyChartData = useMemo(() => ({
+  //   labels: [],
+  //   datasets: [],
+  // }), []);
 
   const selectedCityKey =
     cityKeyMap[classificationState.city] || cityKeyMap[classificationState.cityInput];
@@ -222,21 +316,60 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
               variant="contained" 
               color="primary" 
               disabled={!fuelType || !emissionType || !vehicleAge}
-              onClick={() => {
-                VEHICLE_TYPES.forEach((vehicleType, index) => {
-                  setTimeout(() => {
-                    toast.success(`Prediction data prepared for ${vehicleType}!`);
-                  }, index * 500); // Stagger toasts by 500ms each
-                });
-                const allSelections = VEHICLE_TYPES.map(vehicleType => ({
-                  fuelType,
-                  emissionType,
-                  vehicleAge,
-                  city: classificationState.city || classificationState.cityInput,
-                  vehicleType
-                }));
-                console.log('All vehicle type selections:', allSelections);
-                // Here you can add logic to send to backend or plot
+              onClick={async() => {
+                const transactionId = classificationState.transactionId || localStorage.getItem("transaction_id");
+                if (!transactionId || transactionId === "none") {
+                  toast.error("Transaction ID is missing or invalid. Please upload vehicle classification data first.");
+                  return;
+                }
+                try {
+                  // Clear previous data
+                  setVehicleData({});
+                  setUpdateCounter(0);
+
+                  for (const vehicleType of VEHICLE_TYPES) {
+                  const payload = {
+                    fuelType,
+                    emissionType,
+                    vehicleAge,
+                    city: classificationState.city || classificationState.cityInput,
+                    vehicleType,
+                    transaction_id: transactionId
+                    };
+
+                    // Show toast that this vehicle is being processed
+                    toast.info(`Sending request for ${vehicleType}...`);
+
+                    // Send request to backend
+                    const res = await fetch("http://localhost:5000/predict_emissions", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(payload),
+                    });
+
+                    if (!res.ok) throw new Error(`Prediction failed for ${vehicleType}`);
+
+                    const data = await res.json();
+
+                    // Store the data for this vehicle type
+                    setVehicleData(prev => ({
+                      ...prev,
+                      [vehicleType]: {
+                        ...data,
+                        emissionType: emissionType, // Keep for backward compatibility
+                        selectedEmissionType: emissionType, // What user selected
+                        timestamp: Date.now()
+                      }
+                    }));
+
+                    // Success toast
+                    toast.success(`Prediction received for ${vehicleType}!`);
+                  }
+
+                  toast.success("✅ All vehicle types processed successfully!");
+                } catch (err) {
+                  toast.error("Error contacting backend: " + err.message);
+                }
               }}
             >
               Predict & Plot
@@ -250,62 +383,70 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
           <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem' }}>
             <div style={{ width: 420, height: 320 }}>
               <Line
+                key={`energy-${updateCounter}`}
                 data={energyChartData}
                 options={{
-                  responsive: false,
+                  responsive: true,
+                  maintainAspectRatio: false,
                   plugins: {
                     legend: { display: false },
                     title: {
                       display: true,
-                      text: `Energy Rate (MWh/mile)`,
+                      text: `Energy Rate (${currentUnit})`,
                     },
+                  },
+                  parsing: {
+                    xAxisKey: 'x',
+                    yAxisKey: 'y'
                   },
                   scales: {
                     x: {
+                      type: 'linear',
                       title: { display: true, text: "Speed (mph)" },
                     },
                     y: {
                       type: "linear",
                       display: true,
                       position: "left",
-                      title: { display: true, text: "MWh/mile" },
-                      min: 0,
-                      max: 0.025,
+                      title: { display: true, text: currentUnit },
+                      // Allow negative values by removing beginAtZero
                     },
                   },
                 }}
-                width={400}
-                height={300}
               />
             </div>
             <div style={{ width: 420, height: 320 }}>
               <Line
+                key={`co2-${updateCounter}`}
                 data={co2ChartData}
                 options={{
-                  responsive: false,
+                  responsive: true,
+                  maintainAspectRatio: false,
                   plugins: {
                     legend: { display: false },
                     title: {
                       display: true,
-                      text: `CO₂ Rate (gr/mile)`,
+                      text: `${emissionType || 'CO2'} (${currentUnit})`,
                     },
+                  },
+                  parsing: {
+                    xAxisKey: 'x',
+                    yAxisKey: 'y'
                   },
                   scales: {
                     x: {
+                      type: 'linear',
                       title: { display: true, text: "Speed (mph)" },
                     },
                     y: {
                       type: "linear",
                       display: true,
                       position: "left",
-                      title: { display: true, text: "g/mi" },
-                      min: 0,
-                      max: 7000,
+                      title: { display: true, text: currentUnit },
+                      // Allow negative values by removing beginAtZero
                     },
                   },
                 }}
-                width={400}
-                height={300}
               />
             </div>
             {/* Shared Legend on the side */}
@@ -319,7 +460,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       width: 32,
                       height: 16,
                       backgroundColor: getRandomColor(idx),
-                      border: '2px solid #888',
+                      border: '2px solid #9a1212ff',
                       marginRight: 14,
                       borderRadius: 4,
                     }} />

@@ -115,6 +115,14 @@ function InputStepper({ finalNext }) {
         if (!res.ok) throw new Error("Failed to save table");
         const data = await res.json();
         console.log("Table saved:", data);
+          if (data.transaction_id && data.transaction_id !== "none") {
+                localStorage.setItem("transaction_id", data.transaction_id);
+                console.log("Transaction ID stored:", data.transaction_id);
+                setClassificationState({ transactionId: data.transaction_id });
+              } else {
+                console.warn("Transaction ID is missing or invalid:", data.transaction_id);
+                toast.error("Transaction ID not received from backend. Please try again.");
+              }
         lastSentDataRef.current = formData;
         toast.success("Data uploaded successfully");
       } catch (err) {
