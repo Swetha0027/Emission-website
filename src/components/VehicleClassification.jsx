@@ -1,9 +1,34 @@
+  // Send data to backend on Next
+  const handleNext = async () => {
+    const payload = {
+      base_year: classificationState.baseYear,
+      city: classificationState.city,
+      classification_table_data: classificationState.allClassificationData,
+      classification_table_headers: classificationState.classificationHeaders,
+      vehicle_type: classificationState.vehicleType,
+      // Add more fields as needed
+    };
+    try {
+  const res = await fetch('http://localhost:5000/upload/vehicle_classification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      console.log('Backend response:', data);
+      toast.success('Data uploaded successfully!');
+    } catch (err) {
+      toast.error('Upload failed: ' + err.message);
+    }
+  };
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
+import { toast } from "react-toastify";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
@@ -17,6 +42,13 @@ import useAppStore from "../useAppStore";
 registerAllModules();
 
 function VehicleClassification({ activeStep }) {
+  // City to model mapping (updated as per user request)
+  const cityModelMap = {
+    Atlanta: "CO2",
+    "Los Angeles": "TIRE",
+    Seattle: "BREAK",
+    NewYork: "ENERGY, NOX",
+  };
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
@@ -58,10 +90,14 @@ function VehicleClassification({ activeStep }) {
   ]);
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const file = e.target.files?.[0];
+  if (file) {
+    console.log("Selected file:", file.name);
+  }
+  if (!file) return;
 
-    setClassificationState({ classificationFile: file });
+  // Save the uploaded file in state as 'uploadedFile' for InputStepper
+  setClassificationState({ classificationFile: file, uploadedFile: file });
 
     const reader = new FileReader();
     reader.onload = (evt) => {
@@ -74,6 +110,20 @@ function VehicleClassification({ activeStep }) {
       if (parsed.length > 0) {
         const headers = parsed[0];
         const rows = parsed.slice(1);
+
+        // Check if this data is new or existing
+        let isNewData = true;
+        const prevRows = classificationState.allClassificationData;
+        if (prevRows && prevRows.length > 0) {
+          // Compare by stringifying for simplicity
+          isNewData = JSON.stringify(prevRows) !== JSON.stringify(rows);
+        }
+        if (isNewData) {
+          console.log("New data uploaded.");
+        } else {
+          console.log("Existing data uploaded (no change).");
+        }
+
         setClassificationState({
           classificationHeaders: headers,
           allClassificationData: rows, // store original rows
@@ -92,8 +142,15 @@ function VehicleClassification({ activeStep }) {
     else reader.readAsBinaryString(file);
   };
 
+  // Determine selected city and mapped model
+  const selectedCity = classificationState.city || classificationState.cityInput || "";
+  const selectedModel = cityModelMap[selectedCity] || "";
+
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300">
+      {/* City to Model Mapping Display */}
+      
+
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded transition-colors duration-300">
@@ -199,6 +256,7 @@ function VehicleClassification({ activeStep }) {
               </option>
             ))}
           </select>
+
         </form>
 
         {classificationState.classificationData?.length > 0 ? (

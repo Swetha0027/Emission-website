@@ -1,3 +1,29 @@
+  // Send data to backend on Next
+  const handleNext = async () => {
+    // Send all relevant data to backend
+    const payload = {
+      city: classificationState.city,
+      base_year: classificationState.baseYear,
+      vehicle_type: classificationState.vehicleType,
+      projected_table_data: projectedState.allProjectedData,
+      projected_table_headers: projectedState.projectedHeaders,
+    };
+    try {
+  const res = await fetch('http://localhost:5000/upload/projected_traffic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      console.log('Backend response:', data);
+      toast.success("Data uploaded successfully!");
+      // Optionally show a message or move to next page
+    } catch (err) {
+      toast.error('Upload failed: ' + err.message);
+    }
+    // Optionally move to next page here
+  };
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -18,6 +44,7 @@ import LosAngelesTF from "../assets/TrafficVolumeCA.png";
 import SeattleTF from "../assets/TrafficVolumeWA.png";
 import NewYorkTF from "../assets/TrafficVolumeNY.png";
 import TractParametersTable from "./TractParametersTable";
+import { toast } from "react-toastify";
 registerAllModules();
 function ProjectedDemand({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
@@ -135,6 +162,9 @@ function ProjectedDemand({ activeStep }) {
             themeName={
               theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
             }
+            pagination={false}
+            renderPagination={false}
+            // Remove navigation arrows by disabling pagination UI
           />
         ) : (
           <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">

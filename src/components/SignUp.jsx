@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-toastify";
 // import authService from "../utilities/authService";
 
 const SignUp = () => {
@@ -27,18 +28,18 @@ const SignUp = () => {
     try {
       //   await authService.register(payload);
       console.log("Registration payload:", payload);
-      alert("Successful sign up! Please sign in.");
+      toast.success("Successful sign up! Please sign in.");
       navigate("/signin");
     } catch (error) {
       if (
         error.response?.status === 400 &&
         error.response?.data?.error === "User with this username already exists"
       ) {
-        alert("User already exists. Please sign in.");
+        toast.info("User already exists. Please sign in.");
         navigate("/signin");
       } else {
         console.error("Registration failed:", error);
-        alert("Registration failed. Please try again.");
+        toast.error("Registration failed. Please try again.");
       }
     }
   };

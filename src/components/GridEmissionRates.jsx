@@ -13,6 +13,7 @@ import {
   Divider,
 } from "@mui/material";
 import Button from "@mui/material/Button";
+import { toast } from "react-toastify";
 
 const GridEmissionRates = ({ activeStep }) => {
   const classificationState = useAppStore((state) => state.classificationState);
@@ -70,7 +71,10 @@ const GridEmissionRates = ({ activeStep }) => {
   const setGridEmissionState = useAppStore((state) => state.setGridEmission);
   const onDownload = () => {
     console.log("Download clicked");
+    toast.info("Download started...");
     // Implement download logic here
+    // Assuming download succeeds
+    setTimeout(() => toast.success("Download completed!"), 1000);
   };
 
   return (

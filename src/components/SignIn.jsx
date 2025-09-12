@@ -1,6 +1,7 @@
 // 📝 SignIn.js - Updated with Login Authentication
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 // import useAuthStore from "../utilities/authStore";
 
 const SignIn = () => {
@@ -12,13 +13,21 @@ const SignIn = () => {
   //   const { loginUser } = useAuthStore();
   const navigate = useNavigate();
 
+
   const onSubmit = async (data) => {
     try {
-      console.log(data);
-      //   await loginUser(data);
+      // Send login ID to backend
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loginId: data.username })
+      });
+      if (!res.ok) throw new Error('Login API error');
+      // Optionally handle response here
+      toast.success("Login successful!");
       navigate("/"); // Redirect to home or dashboard after successful login
     } catch {
-      alert("Login failed. Please check your credentials.");
+      toast.error("Login failed. Please check your credentials.");
     }
   };
 

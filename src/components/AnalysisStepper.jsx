@@ -11,8 +11,23 @@ const steps = [
   " Grid Emission Rates",
 ];
 
+
+import useAppStore from "../useAppStore";
+
 function AnalysisStepper({ finalNext }) {
   const [activeStep, setActiveStep] = useState(0);
+
+  // Get all user selections from Zustand
+  const classificationState = useAppStore((s) => s.classificationState);
+  const ConsumptionAndEmissionState = useAppStore((s) => s.ConsumptionAndEmission);
+
+  // Combine all user selections into one variable
+  const userSelections = {
+    fuelType: ConsumptionAndEmissionState.FuelType,
+    emissionType: ConsumptionAndEmissionState.EmissionType,
+    vehicleAge: ConsumptionAndEmissionState.VehicleAge,
+    city: classificationState.city || classificationState.cityInput,
+  };
 
   const handleNext = () => {
     console.log("next button clicked");
@@ -34,23 +49,34 @@ function AnalysisStepper({ finalNext }) {
       {/* Step-wise content */}
       <div className="w-full">
         {activeStep === 0 && (
-          <EnergyConsumptionAndEmissionRates activeStep={activeStep} />
+          <EnergyConsumptionAndEmissionRates activeStep={activeStep} userSelections={userSelections} />
         )}
         {activeStep === 1 && <GridEmissionRates activeStep={activeStep} />}
       </div>
 
       {/* Navigation Buttons */}
       <Stack direction="row" spacing={1}>
-        <IconButton
-          aria-label="previous"
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleBack}
-          disabled={activeStep === 0}
         >
-          <ChevronLeftIcon />
-        </IconButton>
-        <IconButton aria-label="next" onClick={handleNext}>
-          <ChevronRightIcon />
-        </IconButton>
+          Back
+        </button>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          onClick={handleNext}
+          disabled={activeStep === 1}
+        >
+          Next
+        </button>
+        {activeStep === 1 && (
+          <button
+            className="bg-green-600 text-white px-4 py-2 rounded ml-2"
+            onClick={finalNext}
+          >
+            Go to Results
+          </button>
+        )}
       </Stack>
     </div>
   );

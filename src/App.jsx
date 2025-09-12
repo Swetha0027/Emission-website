@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import ArrowStepper from "./components/ArrowStepper";
@@ -39,6 +41,7 @@ const App = () => {
         >
           <Footer />
         </div>
+        <ToastContainer />
       </div>
     </BrowserRouter>
   );

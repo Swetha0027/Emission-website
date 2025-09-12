@@ -13,6 +13,7 @@ import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
 import useAppStore from "../useAppStore";
+import { toast } from "react-toastify";
 
 registerAllModules();
 
@@ -30,6 +31,66 @@ function VehiclePenetration({ activeStep }) {
     "Traffic Volume and Speed",
     "Projected Demand",
   ];
+
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(20);
+
+  // Paginated data
+  const paginatedData = penetrationState.penetrationData?.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
+  ) || [];
+
+  const totalPages = Math.ceil(
+    (penetrationState.penetrationData?.length || 0) / rowsPerPage
+  );
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(0);
+  };
+
+  const handleBack = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
+  };
+
+
+  // Send data to backend on Next
+  const handleNext = async () => {
+    // Send all relevant data to backend
+    const payload = {
+      city: classificationState.city,
+      base_year: classificationState.baseYear,
+      vehicle_type: classificationState.vehicleType,
+      projected_year: penetrationState.projectedYear,
+      penetration_table_data: penetrationState.allPenetrationData,
+      penetration_table_headers: penetrationState.penetrationHeaders,
+    };
+    try {
+  const res = await fetch('http://localhost:5000/upload/penetration_rate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      console.log('Backend response:', data);
+      toast.success("Data uploaded successfully!");
+      // Optionally show a message or move to next page
+    } catch (err) {
+      toast.error('Upload failed: ' + err.message);
+    }
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+  };
+
+  // Reset page when data changes or rowsPerPage changes
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [penetrationState.penetrationData, rowsPerPage]);
+
+  
 
   // guess "Vehicle Type" column index from headers; fallback to col 0
   const vehicleTypeColIndex = React.useMemo(() => {
@@ -206,8 +267,22 @@ function VehiclePenetration({ activeStep }) {
 
         {penetrationState.penetrationData?.length > 0 ? (
           <div className="flex-1 min-w-[60%] overflow-auto">
+            <div className="flex items-center justify-end mb-2">
+              <label className="mr-2 font-semibold">Rows per page:</label>
+              <select
+                value={rowsPerPage}
+                onChange={handleRowsPerPageChange}
+                className="border rounded px-2 py-1"
+                style={{ width: 80 }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
             <HotTable
-              data={penetrationState.penetrationData}
+              data={paginatedData}
               colHeaders={penetrationState.penetrationHeaders}
               rowHeaders
               stretchH="all"
@@ -218,6 +293,18 @@ function VehiclePenetration({ activeStep }) {
                 theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
               }
             />
+            <div className="flex justify-center gap-4 mt-4">
+              <span className="px-2 py-2 font-semibold">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={handleNext}
+                type="button"
+              >
+                Next
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex-1 min-w-[60%] overflow-auto">

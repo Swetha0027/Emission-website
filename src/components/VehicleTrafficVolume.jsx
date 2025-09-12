@@ -1,3 +1,29 @@
+  // Send data to backend on Next
+  const handleNext = async () => {
+    // Send all relevant data to backend
+    const payload = {
+      city: classificationState.city,
+      base_year: classificationState.baseYear,
+      vehicle_type: classificationState.vehicleType,
+      traffic_table_data: trafficState.allTrafficData,
+      traffic_table_headers: trafficState.trafficHeaders,
+    };
+    try {
+  const res = await fetch('http://localhost:5000/upload/traffic_volume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      console.log('Backend response:', data);
+      toast.success("Data uploaded successfully!");
+      // Optionally show a message or move to next page
+    } catch (err) {
+      toast.error('Upload failed: ' + err.message);
+    }
+    // Optionally move to next page here
+  };
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -18,12 +44,15 @@ import LosAngelesTF from "../assets/TrafficVolumeCA.png";
 import SeattleTF from "../assets/TrafficVolumeWA.png";
 import NewYorkTF from "../assets/TrafficVolumeNY.png";
 import TractParametersTable from "./TractParametersTable";
+import { toast } from "react-toastify";
 registerAllModules();
+
 
 function VehicleTrafficVolume({ activeStep }) {
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
+  const [calculatedSpeeds, setCalculatedSpeeds] = React.useState([]);
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
@@ -66,10 +95,33 @@ function VehicleTrafficVolume({ activeStep }) {
     });
   };
 
+  // Calculate speed when user clicks the button
+  /*const handleCalculateSpeed = () => {
+    const data = trafficState.trafficMFTParametersData || [];
+    const headers = trafficState.trafficMFTParametersHeaders || [];
+    // Try to find columns for distance and time
+    const distanceIdx = headers.findIndex(h => /distance/i.test(h));
+    const timeIdx = headers.findIndex(h => /time/i.test(h));
+    if (distanceIdx === -1 || timeIdx === -1) {
+      toast.error("CSV must have 'distance' and 'time' columns.");
+      return;
+    }
+    const speeds = data.map(row => {
+      const distance = parseFloat(row[distanceIdx]);
+      const time = parseFloat(row[timeIdx]);
+      const speed = time > 0 ? (distance / time) : 0;
+      return { distance, time, speed: speed.toFixed(2) };
+    });
+    setCalculatedSpeeds(speeds);
+  };*/
+
   const city =
     (classificationState.city ?? classificationState.cityInput) || "";
   const key = city.trim();
   const srcImg = trafficVolumeImages[key];
+
+  const hasData =
+    (trafficState.trafficMFTParametersData && trafficState.trafficMFTParametersData.length > 0);
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -120,15 +172,46 @@ function VehicleTrafficVolume({ activeStep }) {
             ))}
           </select>
         </form>
-        {srcImg ? (
-          <img
-            src={srcImg}
-            alt={city}
-            className="w-full max-h-[350px] ma object-contain rounded"
-          />
-        ) : null}
-
-        <TractParametersTable trafficState={trafficState} />
+        {hasData && (
+          <>
+            {/*
+            <button
+              className="bg-green-500 text-white px-4 py-2 rounded w-40"
+              onClick={handleCalculateSpeed}
+            >
+              Calculate Speed
+            </button>
+            */}
+            {srcImg ? (
+              <img
+                src={srcImg}
+                alt={city}
+                className="w-full max-h-[350px] ma object-contain rounded"
+              />
+            ) : null}
+            {/* Show calculated speeds if available */}
+            {calculatedSpeeds.length > 0 && (
+              <table className="mt-4 border w-full">
+                <thead>
+                  <tr>
+                    <th className="border px-2 py-1">Distance (mi)</th>
+                    <th className="border px-2 py-1">Time (hr)</th>
+                    <th className="border px-2 py-1">Speed (mph)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {calculatedSpeeds.map((row, idx) => (
+                    <tr key={idx}>
+                      <td className="border px-2 py-1">{row.distance}</td>
+                      <td className="border px-2 py-1">{row.time}</td>
+                      <td className="border px-2 py-1">{row.speed}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
       </div>
       <div className="flex flex-col gap-6">
         <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
