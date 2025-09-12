@@ -88,7 +88,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   // const chartRef = useRef(null);
 
   // State for chart data
-  const [co2ChartData, setCo2ChartData] = useState({
+  const [emissionChartData, setEmissionChartData] = useState({
     labels: [],
     datasets: [{
       label: "No Data Yet",
@@ -99,7 +99,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
       pointRadius: 2,
     }],
   });
-  const [energyChartData, setEnergyChartData] = useState({
+  const [consumptionChartData, setConsumptionChartData] = useState({
     labels: [],
     datasets: [{
       label: "No Data Yet", 
@@ -118,25 +118,39 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
       return acc;
     }, {});
 
-    const energyDatasets = [];
-    const co2Datasets = [];
+    const consumptionDatasets = [];
+    const emissionDatasets = [];
     let unit = "units";
 
-    Object.entries(vehicleData).forEach(([vehicleType, data]) => {
+    Object.entries(vehicleData).forEach(([dataKey, data]) => {
       // Handle the nested data structure from your backend
       let actualData = data;
+      let dataPoints = [];
       
-      // Check if data has the nested "0" structure
-      if (data && data["0"] && !data.results) {
-        actualData = data["0"];
-      }
-      
-      if (!actualData || !actualData.results) {
-        return;
+      // Check if this is consumption data or emissions data
+      if (dataKey.endsWith('_Consumption')) {
+        // Handle consumption data - array of speed/consumption pairs
+        if (data.results && Array.isArray(data.results)) {
+          dataPoints = data.results.map(r => ({ x: r.speed, y: r.consumption }));
+        } else {
+          return; // Skip if no consumption data
+        }
+      } else {
+        // Handle emissions data - check for nested "0" structure
+        if (data && data["0"] && !data.results) {
+          actualData = data["0"];
+        }
+        
+        if (!actualData || !actualData.results) {
+          return;
+        }
+
+        const results = actualData.results;
+        dataPoints = results.map(r => ({ x: r.speed, y: r.prediction }));
       }
 
-      const results = actualData.results;
-      const dataPoints = results.map(r => ({ x: r.speed, y: r.prediction }));
+      // Extract vehicle type from the key (remove _Consumption or _Selected suffix)
+      const vehicleType = dataKey.replace(/_Consumption$|_Selected$/, '');
 
       const newDataset = {
         label: vehicleType,
@@ -151,26 +165,31 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         }
       };
 
-      // Use prediction_type from backend instead of emissionType
+      // Use prediction_type from backend or the stored emission type
       const predictionType = actualData.prediction_type || data.emissionType || "CO2 Emissions";
 
-      if (predictionType === "Energy Rate") {
-        energyDatasets.push(newDataset);
+      // Separate data based on whether it's Fuel Consumption or the selected emission type
+      if (predictionType === "Fuel Consumption" || dataKey.endsWith('_Consumption')) {
+        consumptionDatasets.push(newDataset);
       } else {
-        // All CO2 Emissions and other types go to CO2 chart
-        co2Datasets.push(newDataset);
+        // All emission types go to the emission chart (right side)
+        emissionDatasets.push(newDataset);
       }
 
-      // Get unit from the nested structure
-      if (actualData.unit) unit = actualData.unit;
+      // Get unit from the data structure
+      if (dataKey.endsWith('_Consumption')) {
+        if (data.unit) unit = data.unit;
+      } else if (actualData.unit) {
+        unit = actualData.unit;
+      }
     });
 
     // Update current unit
     setCurrentUnit(unit);
 
     // Handle empty data case
-    if (energyDatasets.length === 0) {
-      setEnergyChartData({
+    if (consumptionDatasets.length === 0) {
+      setConsumptionChartData({
         labels: [],
         datasets: [{
           label: "No Data Available",
@@ -182,14 +201,14 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         }],
       });
     } else {
-      setEnergyChartData({
+      setConsumptionChartData({
         labels: [], // Not needed for scatter plots
-        datasets: energyDatasets,
+        datasets: consumptionDatasets,
       });
     }
 
-    if (co2Datasets.length === 0) {
-      setCo2ChartData({
+    if (emissionDatasets.length === 0) {
+      setEmissionChartData({
         labels: [],
         datasets: [{
           label: "No Data Available",
@@ -201,9 +220,9 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         }],
       });
     } else {
-      setCo2ChartData({
+      setEmissionChartData({
         labels: [], // Not needed for scatter plots
-        datasets: co2Datasets,
+        datasets: emissionDatasets,
       });
     }
 
@@ -327,43 +346,90 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                   setVehicleData({});
                   setUpdateCounter(0);
 
+                  // For each vehicle type, make TWO calls: one for Fuel Consumption and one for selected emission type
                   for (const vehicleType of VEHICLE_TYPES) {
-                  const payload = {
-                    fuelType,
-                    emissionType,
-                    vehicleAge,
-                    city: classificationState.city || classificationState.cityInput,
-                    vehicleType,
-                    transaction_id: transactionId
-                    };
+                    // First call: Get Fuel Consumption data from the new endpoint for multiple speeds
+                    const speeds = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75]; // Speed range
+                    const consumptionDataPoints = [];
 
-                    // Show toast that this vehicle is being processed
-                    toast.info(`Sending request for ${vehicleType}...`);
+                    toast.info(`Fetching Fuel Consumption for ${vehicleType}...`);
 
-                    // Send request to backend
-                    const res = await fetch("http://localhost:5000/predict_emissions", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(payload),
-                    });
+                    // Call consumption endpoint for each speed
+                    for (const speed of speeds) {
+                      const consumptionPayload = {
+                        fuelType,
+                        vehicleAge,
+                        city: classificationState.city || classificationState.cityInput,
+                        vehicleType,
+                        speed: speed
+                      };
 
-                    if (!res.ok) throw new Error(`Prediction failed for ${vehicleType}`);
+                      const consumptionRes = await fetch("http://localhost:5000/predict_consumption", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(consumptionPayload),
+                      });
 
-                    const data = await res.json();
+                      if (consumptionRes.ok) {
+                        const consumptionData = await consumptionRes.json();
+                        const consumptionValue = consumptionData.fuel_consumption !== null ? 
+                          consumptionData.fuel_consumption : consumptionData.energy_consumption;
+                        
+                        consumptionDataPoints.push({
+                          speed: speed,
+                          consumption: consumptionValue,
+                          unit: consumptionData.fuel_unit || consumptionData.energy_unit
+                        });
+                      }
+                    }
 
-                    // Store the data for this vehicle type
+                    // Store Fuel Consumption data
                     setVehicleData(prev => ({
                       ...prev,
-                      [vehicleType]: {
-                        ...data,
-                        emissionType: emissionType, // Keep for backward compatibility
-                        selectedEmissionType: emissionType, // What user selected
+                      [`${vehicleType}_Consumption`]: {
+                        results: consumptionDataPoints,
+                        emissionType: "Fuel Consumption",
+                        selectedEmissionType: "Fuel Consumption",
+                        unit: consumptionDataPoints[0]?.unit || "L/100km",
                         timestamp: Date.now()
                       }
                     }));
 
-                    // Success toast
-                    toast.success(`Prediction received for ${vehicleType}!`);
+                    // Second call: Get the selected emission type from the emissions endpoint
+                    const selectedPayload = {
+                      fuelType,
+                      emissionType: emissionType, // User selected emission type
+                      vehicleAge,
+                      city: classificationState.city || classificationState.cityInput,
+                      vehicleType,
+                      transaction_id: transactionId
+                    };
+
+                    toast.info(`Fetching ${emissionType} for ${vehicleType}...`);
+
+                    const selectedRes = await fetch("http://localhost:5000/predict_emissions", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(selectedPayload),
+                    });
+
+                    if (!selectedRes.ok) throw new Error(`${emissionType} prediction failed for ${vehicleType}`);
+
+                    const selectedData = await selectedRes.json();
+
+                    // Store selected emission type data
+                    setVehicleData(prev => ({
+                      ...prev,
+                      [`${vehicleType}_Selected`]: {
+                        ...selectedData,
+                        emissionType: emissionType,
+                        selectedEmissionType: emissionType,
+                        timestamp: Date.now()
+                      }
+                    }));
+
+                    // Success toast for this vehicle type
+                    toast.success(`Predictions received for ${vehicleType}!`);
                   }
 
                   toast.success("✅ All vehicle types processed successfully!");
@@ -383,8 +449,8 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
           <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem' }}>
             <div style={{ width: 420, height: 320 }}>
               <Line
-                key={`energy-${updateCounter}`}
-                data={energyChartData}
+                key={`consumption-${updateCounter}`}
+                data={consumptionChartData}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
@@ -392,7 +458,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     legend: { display: false },
                     title: {
                       display: true,
-                      text: `Energy Rate (${currentUnit})`,
+                      text: `Fuel Consumption Rate (${currentUnit})`,
                     },
                   },
                   parsing: {
@@ -417,8 +483,8 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
             </div>
             <div style={{ width: 420, height: 320 }}>
               <Line
-                key={`co2-${updateCounter}`}
-                data={co2ChartData}
+                key={`emission-${updateCounter}`}
+                data={emissionChartData}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
@@ -426,7 +492,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     legend: { display: false },
                     title: {
                       display: true,
-                      text: `${emissionType || 'CO2'} (${currentUnit})`,
+                      text: `${emissionType || 'Selected Emission Type'} (${currentUnit})`,
                     },
                   },
                   parsing: {
