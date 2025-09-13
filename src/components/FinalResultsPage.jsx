@@ -15,6 +15,7 @@ import {
   buildR2FileNameFromEmission,
   buildR2FileNameFromFuel,
 } from "../utils/resultsTwoAssets";
+import { getR3EmissionImgUrl } from "../utils/resultsThirdAssets.js";
 import { toast } from "react-toastify";
 import Button from "@mui/material/Button";
 import { useState } from "react";
@@ -73,7 +74,7 @@ const FinalResultsPage = () => {
       city,
       emissionUrl);
     const filenameFuel = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY"  ? buildR1FileNameFromFuel(fuelType, city, fuelUrl)
-    : buildR2FileNameFromEmission(fuelType, city, fuelUrl);
+    : buildR2FileNameFromFuel(fuelType, city, fuelUrl);
 
     // trigger download
     const aFuel = document.createElement("a");
@@ -135,6 +136,20 @@ const FinalResultsPage = () => {
             className="max-w-[700px] w-full h-auto object-contain rounded mx-auto"
           />
         </div>
+      </div> }
+      {vehicleGridSelection === "GRID" && <div className="flex flex-col gap-6">
+        <img
+            src={getR3EmissionImgUrl("CO2", cityName)}
+            className="max-w-[700px] w-full h-auto object-contain rounded mx-auto"
+          />
+          <img
+            src={getR3EmissionImgUrl("CH4", cityName)}
+            className="max-w-[700px] w-full h-auto object-contain rounded mx-auto"
+          />
+          <img
+            src={getR3EmissionImgUrl("N2O", cityName)}
+            className="max-w-[700px] w-full h-auto object-contain rounded mx-auto"
+          />
       </div> }
       {vehicleGridSelection === "VEHICLE" && <div className="flex flex-col gap-4 items-center">
         <select
