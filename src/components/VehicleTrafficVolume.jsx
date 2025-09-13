@@ -1,36 +1,3 @@
-  // Send data to backend on Next
-  const handleNext = async () => {
-    // Collect values
-    const city = (classificationState.city ?? classificationState.cityInput) || '';
-    const trafficVolumeFile = trafficState.trafficVolumeFile || null;
-    const mftParametersFile = trafficState.trafficMFTParametersFile || null;
-    const values = {
-      city,
-      trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
-      mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
-    };
-    console.log('Traffic Volume and Speed upload values (on Next):', values);
-
-    // Prepare FormData for backend
-    const formData = new FormData();
-    formData.append('city', city);
-    if (trafficVolumeFile) formData.append('traffic_volume_file', trafficVolumeFile);
-    if (mftParametersFile) formData.append('mft_parameters_file', mftParametersFile);
-
-    try {
-      const res = await fetch('http://127.0.0.1:5000/upload/traffic_volume_speed', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-      console.log('Backend response:', data);
-      toast.success("Data uploaded successfully!");
-    } catch (err) {
-      toast.error('Upload failed: ' + err.message);
-    }
-    // Optionally move to next page here
-  };
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -60,6 +27,63 @@ function VehicleTrafficVolume({ activeStep }) {
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
   const [calculatedSpeeds, setCalculatedSpeeds] = React.useState([]);
+
+  // Submit data to backend
+  const handleNext = async () => {
+    // Collect values
+    const city = (classificationState.city ?? classificationState.cityInput) || '';
+    const trafficVolumeFile = trafficState.trafficVolumeFile || null;
+    const mftParametersFile = trafficState.trafficMFTParametersFile || null;
+    const values = {
+      city,
+      trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
+      mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
+    };
+    console.log('Traffic Volume and Speed upload values (on Next):', values);
+
+    // Check if both files are selected
+    if (!trafficVolumeFile || !mftParametersFile) {
+      toast.error('Please select both Traffic Volume and MFT Parameters files');
+      return;
+    }
+
+    // Prepare FormData for backend
+    const formData = new FormData();
+    formData.append('city_name', city); // Use city_name as expected by backend
+    
+    // Add transaction_id from localStorage or default
+    const storedTransactionId = localStorage.getItem('transaction_id') || 'emission-analysis-2025';
+    formData.append('transaction_id', storedTransactionId);
+    
+    formData.append('file1', trafficVolumeFile);
+    formData.append('file2', mftParametersFile);
+
+    try {
+      console.log('Uploading to /upload/traffic_volume...');
+      const res = await fetch('http://localhost:5000/upload/traffic_volume', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+      
+      const data = await res.json();
+      console.log('Backend response:', data);
+      toast.success("Traffic data uploaded successfully!");
+      
+      // Store transaction_id for later use
+      if (data.transaction_id) {
+        localStorage.setItem('transaction_id', data.transaction_id);
+      }
+      
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error('Upload failed: ' + err.message);
+    }
+  };
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
@@ -187,6 +211,20 @@ function VehicleTrafficVolume({ activeStep }) {
             ))}
           </select>
         </form>
+        
+        {/* Submit button for uploading traffic data */}
+        {(trafficState.trafficVolumeFile || trafficState.trafficMFTParametersFile) && (
+          <div className="flex justify-center mb-4">
+            <button
+              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+              onClick={handleNext}
+              type="button"
+            >
+              Submit Traffic Data & Continue
+            </button>
+          </div>
+        )}
+        
         {(hasTrafficVolumeData || hasMFTParametersData) && (
           <>
             {/*

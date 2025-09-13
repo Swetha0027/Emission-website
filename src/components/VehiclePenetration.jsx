@@ -56,6 +56,10 @@ function VehiclePenetration({ activeStep }) {
     setCurrentPage((prev) => Math.max(prev - 1, 0));
   };
 
+  // Pagination Next - only for table pagination
+  const handlePaginationNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+  };
 
   // Send data to backend on Next
   // Helper to print the current values and file in the console
@@ -96,6 +100,11 @@ function VehiclePenetration({ activeStep }) {
     formData.append('base_year', values.base_year);
     formData.append('vehicle_type', values.vehicle_type);
     formData.append('projected_year', values.projected_year);
+    
+    // Add transaction_id from localStorage or default
+    const storedTransactionId = localStorage.getItem('transaction_id') || 'emission-analysis-2025';
+    formData.append('transaction_id', storedTransactionId);
+    
     if (values.user_id) formData.append('user_id', values.user_id);
     if (values.file) formData.append('file', values.file);
 
@@ -112,7 +121,7 @@ function VehiclePenetration({ activeStep }) {
     } catch (err) {
       toast.error('Upload failed: ' + err.message);
     }
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+    // Don't change pagination here - this is for step progression
   };
 
   // Reset page when data changes or rowsPerPage changes
@@ -324,12 +333,21 @@ function VehiclePenetration({ activeStep }) {
               }
             />
             <div className="flex justify-center gap-4 mt-4">
+              <button
+                className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                onClick={handleBack}
+                disabled={currentPage === 0}
+                type="button"
+              >
+                Previous
+              </button>
               <span className="px-2 py-2 font-semibold">
                 Page {currentPage + 1} of {totalPages}
               </span>
               <button
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                onClick={handleNext}
+                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                onClick={handlePaginationNext}
+                disabled={currentPage >= totalPages - 1}
                 type="button"
               >
                 Next
@@ -339,6 +357,19 @@ function VehiclePenetration({ activeStep }) {
         ) : (
           <div className="flex-1 min-w-[60%] overflow-auto">
             {/* placeholder table */}
+          </div>
+        )}
+        
+        {/* Submit button for proceeding to next step - show only when data exists */}
+        {penetrationState.penetrationData && penetrationState.penetrationData.length > 0 && (
+          <div className="flex justify-center mt-6">
+            <button
+              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+              onClick={handleNext}
+              type="button"
+            >
+              Submit & Continue to Next Step
+            </button>
           </div>
         )}
       </div>

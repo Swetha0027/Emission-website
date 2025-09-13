@@ -17,13 +17,14 @@ const SignIn = () => {
   const onSubmit = async (data) => {
     try {
       // Send login ID to backend
-      const res = await fetch('/api/login', {
+      const res = await fetch('http://localhost:5000/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ loginId: data.username })
+        body: JSON.stringify({ username: data.username, password: data.password })
       });
       if (!res.ok) throw new Error('Login API error');
       // Optionally handle response here
+      const responseData = await res.json();
       toast.success("Login successful!");
       navigate("/"); // Redirect to home or dashboard after successful login
     } catch {

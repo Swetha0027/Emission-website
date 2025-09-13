@@ -34,13 +34,18 @@
 
     // Prepare FormData for backend
     const formData = new FormData();
-    formData.append('city', city);
+    formData.append('city_name', city);
     formData.append('year', year);
-    if (file) formData.append('file', file);
-    if (csvString) formData.append('csv', new Blob([csvString], { type: 'text/csv' }), 'table.csv');
+    
+    // Add transaction_id from localStorage or default
+    const storedTransactionId = localStorage.getItem('transaction_id') || 'emission-analysis-2025';
+    formData.append('transaction_id', storedTransactionId);
+    
+    if (file) formData.append('file_csv', file);
+    if (csvString) formData.append('file_table', csvString);
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/upload/projected_traffic', {
+      const res = await fetch('http://localhost:5000/upload/projected_traffic', {
         method: 'POST',
         body: formData,
       });

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useEffect } from "react";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import ArrowStepper from "./components/ArrowStepper";
@@ -10,6 +11,32 @@ import useAppStore from "./useAppStore";
 
 const App = () => {
   const theme = useAppStore((s) => s.theme);
+
+  // Clear database on application start
+  useEffect(() => {
+    const clearDatabaseOnStart = async () => {
+      try {
+        console.log("[App] Clearing database on application start...");
+        const response = await fetch("http://localhost:5000/admin/clear_db", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log("[App] Database cleared successfully:", result);
+        } else {
+          console.warn("[App] Failed to clear database:", response.status);
+        }
+      } catch (error) {
+        console.error("[App] Error clearing database on start:", error);
+      }
+    };
+
+    clearDatabaseOnStart();
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     // App.tsx

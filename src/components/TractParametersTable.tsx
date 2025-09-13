@@ -68,11 +68,14 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
       toast.success("Data uploaded successfully!");
       // Optionally show a message or move to next page
     } catch (err) {
-      toast.error('Upload failed: ' + err.message);
+      toast.error('Upload failed: ' + (err as Error).message);
     }
-    setPage((p) => Math.min(p + 1, pageCount));
+    // Don't change pagination here - this is for step progression
   };
-  const handleBack = () => setPage((p) => Math.max(p - 1, 1));
+  
+  // Pagination functions
+  const handlePaginationNext = () => setPage((p: number) => Math.min(p + 1, pageCount));
+  const handleBack = () => setPage((p: number) => Math.max(p - 1, 1));
 
   return allRows.length ? (
     <Box className="min-w-[60%]">
@@ -104,12 +107,24 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
         <Button variant="contained" onClick={handleBack} disabled={page === 1}>
           Back
         </Button>
-        <Button variant="contained" onClick={handleNext} disabled={page === pageCount}>
+        <Button variant="contained" onClick={handlePaginationNext} disabled={page === pageCount}>
           Next
         </Button>
       </Box>
       <Box display="flex" justifyContent="center" mt={1}>
         Page {page} of {pageCount}
+      </Box>
+      
+      {/* Submit button for proceeding to next step */}
+      <Box display="flex" justifyContent="center" mt={3}>
+        <Button 
+          variant="contained" 
+          color="success" 
+          size="large"
+          onClick={handleNext}
+        >
+          Submit & Continue to Next Step
+        </Button>
       </Box>
     </Box>
   ) : (
