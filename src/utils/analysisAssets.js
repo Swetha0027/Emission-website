@@ -1,5 +1,5 @@
 // Vite: import all analysis images
-const modules = import.meta.glob("../assets/*_Analysis.{png,jpg,jpeg}", {
+const modules = import.meta.glob("../assets/Analysis/*_Analysis.{png,jpg,jpeg}", {
   eager: true,
   import: "default",
 });
