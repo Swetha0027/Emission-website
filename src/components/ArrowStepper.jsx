@@ -4,7 +4,7 @@ import InputStepper from "./InputStepper";
 import AnalysisStepper from "./AnalysisStepper";
 import useAppStore from '../useAppStore';
 import { toast } from "react-toastify";
-
+import FinalResultsPage from "./FinalResultsPage";
 export default function ArrowStepper() {
   const [activeStep, setActiveStep] = useState(-1);
   const steps = ["Input Data", "Analysis", "Results"];
@@ -265,10 +265,7 @@ export default function ArrowStepper() {
       )}
       {activeStep === 2 && (
         <div>
-          <p className="text-gray-600 mb-4">Here are your results:</p>
-          <div className="bg-green-50 border border-green-200 rounded-md p-4">
-            <p className="text-green-800">Analysis completed successfully!</p>
-          </div>
+          <FinalResultsPage></FinalResultsPage>
         </div>
       )}
 

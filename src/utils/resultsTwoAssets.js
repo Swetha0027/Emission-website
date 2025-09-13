@@ -1,5 +1,5 @@
 // Vite: import all R2 images from assets/ResultsOne
-const modules = import.meta.glob("../assets/ResultsOne/*_R2.{png,jpg,jpeg}", {
+const modules = import.meta.glob("../assets/ResultsTwo/*_R2.{png,jpg,jpeg}", {
   eager: true,
   import: "default",
 });
