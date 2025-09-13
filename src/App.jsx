@@ -2,8 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
-import SignIn from "./components/SignIn";
-import SignUp from "./components/SignUp";
+// import SignIn from "./components/SignIn";
+// import SignUp from "./components/SignUp";
 import ArrowStepper from "./components/ArrowStepper";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -55,8 +55,8 @@ const App = () => {
         <main className="pt-[110px] pb-[56px]">
           <Routes>
             <Route path="/" element={<ArrowStepper />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
+            {/* <Route path="/signin" element={<SignIn />} /> */}
+            {/* <Route path="/signup" element={<SignUp />} /> */}
           </Routes>
         </main>
 

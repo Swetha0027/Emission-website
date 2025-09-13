@@ -44,7 +44,7 @@ const Header = () => {
       </div>
 
       <div className="flex flex-col items-center gap-4">
-        <Link
+        {/* <Link
           to={"/signin"}
           className={`font-semibold py-1 px-4 rounded-md border transition-colors duration-300 ${
             theme === "dark"
@@ -53,7 +53,7 @@ const Header = () => {
           }`}
         >
           Sign In
-        </Link>
+        </Link> */}
         <div className="flex items-center ml-2">
           <label className="relative inline-flex items-center cursor-pointer">
             <input
