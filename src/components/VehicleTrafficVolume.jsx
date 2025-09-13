@@ -187,7 +187,7 @@ function VehicleTrafficVolume({ activeStep }) {
             />
           </label>
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
-            <span className="mr-2">Upload</span> MFT Parameters
+            <span className="mr-2">Upload</span> MFD Parameters
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
@@ -243,7 +243,7 @@ function VehicleTrafficVolume({ activeStep }) {
               />
             ) : null}
             {/* Table for Traffic Volume */}
-            {hasTrafficVolumeData && (
+            {/* {hasTrafficVolumeData && (
               <div className="overflow-auto max-h-96 mt-4">
                 <div className="font-semibold text-lg mb-2">Traffic Volume Table</div>
                 <table className="border w-full">
@@ -265,11 +265,12 @@ function VehicleTrafficVolume({ activeStep }) {
                   </tbody>
                 </table>
               </div>
-            )}
+            )} */}
             {/* Table for MFT Parameters */}
-            {hasMFTParametersData && (
+            <TractParametersTable trafficState={trafficState} />
+            {/* {hasMFTParametersData && (
               <div className="overflow-auto max-h-96 mt-4">
-                <div className="font-semibold text-lg mb-2">MFT Parameters Table</div>
+                <div className="font-semibold text-lg mb-2">MFD Parameters Table</div>
                 <table className="border w-full">
                   <thead>
                     <tr>
@@ -289,9 +290,9 @@ function VehicleTrafficVolume({ activeStep }) {
                   </tbody>
                 </table>
               </div>
-            )}
+            )} */}
             {/* Show calculated speeds if available */}
-            {calculatedSpeeds.length > 0 && (
+            {/* {calculatedSpeeds.length > 0 && (
               <table className="mt-4 border w-full">
                 <thead>
                   <tr>
@@ -310,7 +311,7 @@ function VehicleTrafficVolume({ activeStep }) {
                   ))}
                 </tbody>
               </table>
-            )}
+            )} */}
           </>
         )}
       </div>
