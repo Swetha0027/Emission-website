@@ -89,6 +89,12 @@ function ProjectedDemand({ activeStep }) {
     Seattle: SeattleTF,
     NewYork: NewYorkTF,
   };
+    const verticalSteps = [
+    "Vehicle Classification Data",
+    "Projected Vehicle Penetration Rate Data",
+    "Traffic Volume and Speed",
+    "Projected Demand",
+  ];
   // Helper to convert table data to CSV string
   function arrayToCSV(headers, rows) {
     const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
@@ -154,7 +160,7 @@ function ProjectedDemand({ activeStep }) {
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
-            <span className="mr-2">Upload</span> Projected Traffic Volume Data
+            <span className="mr-2">Upload</span> Projected Demand
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
@@ -230,7 +236,9 @@ function ProjectedDemand({ activeStep }) {
         <TractParametersTable trafficState={trafficState} />
       </div>
       <div className="flex flex-col gap-6">
-        <VehicleStepper activeStep={activeStep} />
+        <div className="ml-4">
+          <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
+        </div>
         {classificationState.city && (
           <img
             src={cityImages[classificationState.city]}

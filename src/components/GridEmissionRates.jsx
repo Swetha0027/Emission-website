@@ -4,6 +4,9 @@ import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
+import AnalysisImage from "./AnalysisImage"
+import { getAnalysisImgUrl, buildAnalysisFileName } from "../utils/analysisAssets";
+
 import {
   Card,
   CardContent,
@@ -17,6 +20,7 @@ import { toast } from "react-toastify";
 
 const GridEmissionRates = ({ activeStep }) => {
   const classificationState = useAppStore((state) => state.classificationState);
+  const trafficState = useAppStore((s) => s.trafficVolumeState);
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   const steps = [
@@ -69,13 +73,29 @@ const GridEmissionRates = ({ activeStep }) => {
 
   const GridEmissionState = useAppStore((state) => state.GridEmission);
   const setGridEmissionState = useAppStore((state) => state.setGridEmission);
+
   const onDownload = () => {
-    console.log("Download clicked");
-    toast.info("Download started...");
-    // Implement download logic here
-    // Assuming download succeeds
-    setTimeout(() => toast.success("Download completed!"), 1000);
-  };
+    const emission = GridEmissionState.EmissionType;
+    const city = classificationState.cityInput;
+
+    const url = getAnalysisImgUrl(emission, city);
+    if (!url) {
+      toast.error("Image not found for selected emission/city");
+      return;
+    }
+
+    const filename = buildAnalysisFileName(emission, city, url);
+
+    // trigger download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    toast.success("Download started");
+};
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -112,11 +132,9 @@ const GridEmissionRates = ({ activeStep }) => {
             className="border rounded px-2 py-1 w-56"
           >
             <option value="">Select Grid Emission Type</option>
-            <option value="CO₂ Emissions">CO₂ Emissions</option>
-            <option value="Energy Rate">Energy Rate</option>
-            <option value="NOx">NOx</option>
-            <option value="PM2.5 Brake Wear">PM2.5 Brake Wear</option>
-            <option value="PM2.5 Tire Wear">PM2.5 Tire Wear</option>
+            <option value="CO2">CO2</option>
+            <option value="N2O">N2O</option>
+            <option value="CH4">CH4</option>
           </select>
           <select
             value={classificationState.cityInput}
@@ -131,9 +149,17 @@ const GridEmissionRates = ({ activeStep }) => {
             ))}
           </select>
         </form>
+        {classificationState.cityInput && GridEmissionState.EmissionType && (
+          <AnalysisImage
+            emissionType={GridEmissionState.EmissionType}
+            city={classificationState.cityInput}
+            className="max-w-[900px] w-full h-auto object-contain rounded self-start"
+            fallback={<div className="text-sm text-red-600">Image not found</div>}
+          />
+        )}
 
         <div>
-          <Button variant="contained" onClick={onDownload}>
+          <Button variant="contained" onClick={onDownload} disabled={!GridEmissionState.EmissionType || !classificationState.cityInput}>
             Download
           </Button>
         </div>
