@@ -60,7 +60,7 @@ function VehicleTrafficVolume({ activeStep }) {
 
     try {
       console.log('Uploading to /upload/traffic_volume...');
-      const res = await fetch('http://localhost:5000/upload/traffic_volume', {
+      const res = await fetch('http://localhost:5003/upload/traffic_volume', {
         method: 'POST',
         body: formData,
       });
@@ -213,18 +213,6 @@ function VehicleTrafficVolume({ activeStep }) {
         </form>
         
         {/* Submit button for uploading traffic data */}
-        {(trafficState.trafficVolumeFile || trafficState.trafficMFTParametersFile) && (
-          <div className="flex justify-center mb-4">
-            <button
-              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
-              onClick={handleNext}
-              type="button"
-            >
-              Submit Traffic Data & Continue
-            </button>
-          </div>
-        )}
-        
         {(hasTrafficVolumeData || hasMFTParametersData) && (
           <>
             {/*

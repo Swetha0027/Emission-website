@@ -17,7 +17,7 @@ const App = () => {
     const clearDatabaseOnStart = async () => {
       try {
         console.log("[App] Clearing database on application start...");
-        const response = await fetch("http://localhost:5000/admin/clear_db", {
+        const response = await fetch("http://localhost:5003/admin/clear_db", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

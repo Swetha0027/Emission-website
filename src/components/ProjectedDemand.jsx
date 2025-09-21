@@ -45,7 +45,7 @@
     if (csvString) formData.append('file_table', csvString);
 
     try {
-      const res = await fetch('http://localhost:5000/upload/projected_traffic', {
+      const res = await fetch('http://localhost:5003/upload/projected_traffic', {
         method: 'POST',
         body: formData,
       });

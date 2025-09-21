@@ -17,7 +17,7 @@ const SignIn = () => {
   const onSubmit = async (data) => {
     try {
       // Send login ID to backend
-      const res = await fetch('http://localhost:5000/auth/login', {
+      const res = await fetch('http://localhost:5003/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: data.username, password: data.password })

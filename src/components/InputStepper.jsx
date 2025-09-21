@@ -106,7 +106,7 @@ function InputStepper({ finalNext }) {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/upload/${currentStep.type}`,
+          `http://localhost:5003/upload/${currentStep.type}`,
           {
             method: "POST",
             body: formData,
@@ -145,7 +145,7 @@ function InputStepper({ finalNext }) {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/upload/${currentStep.type}`,
+          `http://localhost:5003/upload/${currentStep.type}`,
           {
             method: "POST",
             body: formData,

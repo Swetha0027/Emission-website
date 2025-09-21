@@ -42,7 +42,7 @@ function VehicleClassification({ activeStep }) {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/upload/vehicle_classification", {
+      const res = await fetch("http://localhost:5003/upload/vehicle_classification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

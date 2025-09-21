@@ -109,7 +109,7 @@ function VehiclePenetration({ activeStep }) {
     if (values.file) formData.append('file', values.file);
 
     try {
-      const res = await fetch('http://localhost:5000/upload/penetration_rate', {
+      const res = await fetch('http://localhost:5003/upload/penetration_rate', {
         method: 'POST',
         body: formData,
       });
@@ -360,18 +360,6 @@ function VehiclePenetration({ activeStep }) {
           </div>
         )}
         
-        {/* Submit button for proceeding to next step - show only when data exists */}
-        {penetrationState.penetrationData && penetrationState.penetrationData.length > 0 && (
-          <div className="flex justify-center mt-6">
-            <button
-              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
-              onClick={handleNext}
-              type="button"
-            >
-              Submit & Continue to Next Step
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-col gap-6">

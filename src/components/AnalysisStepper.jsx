@@ -57,12 +57,6 @@ function AnalysisStepper({ finalNext }) {
       {/* Navigation Buttons */}
       <Stack direction="row" spacing={1}>
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={handleBack}
-        >
-          Back
-        </button>
-        <button
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           onClick={handleNext}
           disabled={activeStep === 1}

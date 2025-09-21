@@ -30,8 +30,8 @@ ChartJS.register(
 );
 
 const VEHICLE_TYPES = [
-  "Combination long-haul Truck",
-  "Combination short-haul Truck",
+  "Combination Long-haul Truck",
+  "Combination Short-haul Truck",
   "Light Commercial Truck",
   "Motorhome - Recreational Vehicle",
   "Motorcycle",
@@ -40,8 +40,8 @@ const VEHICLE_TYPES = [
   "Passenger Truck",
   "Refuse Truck",
   "School Bus",
-  "Single Unit long-haul Truck",
-  "Single Unit short-haul Truck",
+  "Single Unit Long-haul Truck",
+  "Single Unit Short-haul Truck",
   "Transit Bus",
 ];
 
@@ -336,11 +336,6 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
               color="primary" 
               disabled={!fuelType || !emissionType || !vehicleAge}
               onClick={async() => {
-                const transactionId = classificationState.transactionId || localStorage.getItem("transaction_id");
-                if (!transactionId || transactionId === "none") {
-                  toast.error("Transaction ID is missing or invalid. Please upload vehicle classification data first.");
-                  return;
-                }
                 try {
                   // Clear previous data
                   setVehicleData({});
@@ -354,7 +349,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
                     toast.info(`Fetching Fuel Consumption for ${vehicleType}...`);
 
-                    // Call consumption endpoint for each speed
+                                        // Call consumption endpoint for each speed
                     for (const speed of speeds) {
                       const consumptionPayload = {
                         fuelType,
@@ -364,7 +359,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         speed: speed
                       };
 
-                      const consumptionRes = await fetch("http://localhost:5000/predict_consumption", {
+                      const consumptionRes = await fetch("http://127.0.0.1:5003/predict_consumption", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(consumptionPayload),
@@ -396,32 +391,40 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     }));
 
                     // Second call: Get the selected emission type from the emissions endpoint
-                    const selectedPayload = {
-                      fuelType,
-                      emissionType: emissionType, // User selected emission type
-                      vehicleAge,
-                      city: classificationState.city || classificationState.cityInput,
-                      vehicleType,
-                      transaction_id: transactionId
-                    };
 
                     toast.info(`Fetching ${emissionType} for ${vehicleType}...`);
 
-                    const selectedRes = await fetch("http://localhost:5000/predict_emissions", {
+                    const selectedRes = await fetch("http://127.0.0.1:5003/predict_emissions", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(selectedPayload),
+                      body: JSON.stringify({
+                        City: classificationState.city || classificationState.cityInput,
+                        FuelType: fuelType,
+                        VehicleType: vehicleType,
+                        Age: parseInt(vehicleAge),
+                        EmissionType: emissionType
+                      }),
                     });
 
                     if (!selectedRes.ok) throw new Error(`${emissionType} prediction failed for ${vehicleType}`);
 
                     const selectedData = await selectedRes.json();
 
+                    // Transform backend data format to expected frontend format
+                    const transformedData = {
+                      results: selectedData.map(item => ({
+                        speed: item.Speed,
+                        prediction: item.PredictedValue
+                      })),
+                      unit: selectedData[0]?.Unit || "gr/mile",
+                      prediction_type: selectedData[0]?.EmissionType || emissionType
+                    };
+
                     // Store selected emission type data
                     setVehicleData(prev => ({
                       ...prev,
                       [`${vehicleType}_Selected`]: {
-                        ...selectedData,
+                        ...transformedData,
                         emissionType: emissionType,
                         selectedEmissionType: emissionType,
                         timestamp: Date.now()
@@ -524,11 +527,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     <span style={{
                       display: 'inline-block',
                       width: 32,
-                      height: 16,
+                      height: 2,
                       backgroundColor: getRandomColor(idx),
-                      border: '2px solid #9a1212ff',
                       marginRight: 14,
-                      borderRadius: 4,
+                      borderRadius: 1,
                     }} />
                     <span style={{ fontSize: 18, fontWeight: 500 }}>{type}</span>
                   </div>

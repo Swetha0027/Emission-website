@@ -57,7 +57,7 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
       mfd_table_headers: trafficState.trafficMFTParametersHeaders,
     };
     try {
-  const res = await fetch('http://localhost:5000/upload/mfd_params', {
+  const res = await fetch('http://localhost:5003/upload/mfd_params', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -116,16 +116,6 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
       </Box>
       
       {/* Submit button for proceeding to next step */}
-      <Box display="flex" justifyContent="center" mt={3}>
-        <Button 
-          variant="contained" 
-          color="success" 
-          size="large"
-          onClick={handleNext}
-        >
-          Submit & Continue to Next Step
-        </Button>
-      </Box>
     </Box>
   ) : (
     <div className="min-w-[60%] flex items-center justify-center h-auto text-gray-500">
