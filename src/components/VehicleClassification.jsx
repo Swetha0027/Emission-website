@@ -166,21 +166,30 @@ function VehicleClassification({ activeStep }) {
 
           {/* Base Year */}
           <div className="flex flex-col gap-1">
-            <label className={`text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-              Base Year
-            </label>
-            <input
-              type="text"
+            <select
               value={classificationState.baseYear}
               onChange={(e) => setClassificationState({ baseYear: e.target.value })}
               className={`border rounded px-2 py-1 w-20 h-[32px] transition-colors duration-300 ${
                 theme === "dark"
-                  ? "bg-[#18181b] text-white border-gray-700 placeholder-gray-400"
+                  ? "bg-[#18181b] text-white border-gray-700"
                   : "bg-white text-black border-gray-300"
               }`}
               disabled={classificationState.city === ""}
-              placeholder="202#"
-            />
+            >
+              <option value="">Year</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+
+            </select>
           </div>
 
           {/* Vehicle Type */}
