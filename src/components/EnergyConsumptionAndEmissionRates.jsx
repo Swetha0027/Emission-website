@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import useAppStore from "../useAppStore";
 import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
@@ -79,7 +79,8 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
   // State for real chart data
   const [updateCounter, setUpdateCounter] = useState(0);
-  const [currentUnit, setCurrentUnit] = useState("units");
+  const [consumptionUnit, setConsumptionUnit] = useState("units");
+  const [emissionUnit, setEmissionUnit] = useState("units");
 
   // State to hold all received vehicle data
   const [vehicleData, setVehicleData] = useState({});
@@ -120,7 +121,8 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
     const consumptionDatasets = [];
     const emissionDatasets = [];
-    let unit = "units";
+    let consumptionUnitTemp = "units";
+    let emissionUnitTemp = "units";
 
     Object.entries(vehicleData).forEach(([dataKey, data]) => {
       // Handle the nested data structure from your backend
@@ -132,6 +134,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         // Handle consumption data - array of speed/consumption pairs
         if (data.results && Array.isArray(data.results)) {
           dataPoints = data.results.map(r => ({ x: r.speed, y: r.consumption }));
+          // Get consumption unit from the stored data
+          if (data.unit) {
+            consumptionUnitTemp = data.unit;
+          }
         } else {
           return; // Skip if no consumption data
         }
@@ -147,6 +153,11 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
         const results = actualData.results;
         dataPoints = results.map(r => ({ x: r.speed, y: r.prediction }));
+        
+        // Get emission unit
+        if (actualData.unit) {
+          emissionUnitTemp = actualData.unit;
+        }
       }
 
       // Extract vehicle type from the key (remove _Consumption or _Selected suffix)
@@ -175,17 +186,11 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         // All emission types go to the emission chart (right side)
         emissionDatasets.push(newDataset);
       }
-
-      // Get unit from the data structure
-      if (dataKey.endsWith('_Consumption')) {
-        if (data.unit) unit = data.unit;
-      } else if (actualData.unit) {
-        unit = actualData.unit;
-      }
     });
 
-    // Update current unit
-    setCurrentUnit(unit);
+    // Update units separately
+    setConsumptionUnit(consumptionUnitTemp);
+    setEmissionUnit(emissionUnitTemp);
 
     // Handle empty data case
     if (consumptionDatasets.length === 0) {
@@ -370,6 +375,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         const consumptionValue = consumptionData.fuel_consumption !== null ? 
                           consumptionData.fuel_consumption : consumptionData.energy_consumption;
                         
+                          console.log("Consumption data:", consumptionData);
                         consumptionDataPoints.push({
                           speed: speed,
                           consumption: consumptionValue,
@@ -383,9 +389,9 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       ...prev,
                       [`${vehicleType}_Consumption`]: {
                         results: consumptionDataPoints,
+                        unit: consumptionDataPoints.length > 0 ? consumptionDataPoints[0].unit : "units",
                         emissionType: "Fuel Consumption",
                         selectedEmissionType: "Fuel Consumption",
-                        unit: consumptionDataPoints[0]?.unit || "L/100km",
                         timestamp: Date.now()
                       }
                     }));
@@ -461,7 +467,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     legend: { display: false },
                     title: {
                       display: true,
-                      text: `Fuel Consumption Rate (${currentUnit})`,
+                      text: `Fuel Consumption Rate (${consumptionUnit})`,
                     },
                   },
                   parsing: {
@@ -477,7 +483,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       type: "linear",
                       display: true,
                       position: "left",
-                      title: { display: true, text: currentUnit },
+                      title: { display: true, text: consumptionUnit },
                       // Allow negative values by removing beginAtZero
                     },
                   },
@@ -495,7 +501,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     legend: { display: false },
                     title: {
                       display: true,
-                      text: `${emissionType || 'Selected Emission Type'} (${currentUnit})`,
+                      text: `${emissionType || 'Selected Emission Type'} (${emissionUnit})`,
                     },
                   },
                   parsing: {
@@ -511,7 +517,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       type: "linear",
                       display: true,
                       position: "left",
-                      title: { display: true, text: currentUnit },
+                      title: { display: true, text: emissionUnit },
                       // Allow negative values by removing beginAtZero
                     },
                   },
