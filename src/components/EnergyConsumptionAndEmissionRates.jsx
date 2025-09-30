@@ -125,40 +125,41 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
     let emissionUnitTemp = "units";
 
     Object.entries(vehicleData).forEach(([dataKey, data]) => {
-      // Handle the nested data structure from your backend
-      let actualData = data;
-      let dataPoints = [];
-      
-      // Check if this is consumption data or emissions data
-      if (dataKey.endsWith('_Consumption')) {
-        // Handle consumption data - array of speed/consumption pairs
-        if (data.results && Array.isArray(data.results)) {
-          dataPoints = data.results.map(r => ({ x: r.speed, y: r.consumption }));
-          // Get consumption unit from the stored data
-          if (data.unit) {
-            consumptionUnitTemp = data.unit;
+        // Handle the nested data structure from your backend
+        let actualData = data;
+        let dataPoints = [];
+        // Check if this is consumption data or emissions data
+        if (dataKey.endsWith('_Consumption')) {
+          // Handle consumption data - array of speed/consumption pairs
+          if (data.results && Array.isArray(data.results)) {
+            // Sort by speed to avoid straight lines between unsorted points
+            dataPoints = data.results
+              .map(r => ({ x: r.speed, y: r.consumption }))
+              .sort((a, b) => a.x - b.x);
+            // Get consumption unit from the stored data
+            if (data.unit) {
+              consumptionUnitTemp = data.unit;
+            }
+          } else {
+            return; // Skip if no consumption data
           }
         } else {
-          return; // Skip if no consumption data
+          // Handle emissions data - check for nested "0" structure
+          if (data && data["0"] && !data.results) {
+            actualData = data["0"];
+          }
+          if (!actualData || !actualData.results) {
+            return;
+          }
+          const results = actualData.results;
+          dataPoints = results
+            .map(r => ({ x: r.speed, y: r.prediction }))
+            .sort((a, b) => a.x - b.x);
+          // Get emission unit
+          if (actualData.unit) {
+            emissionUnitTemp = actualData.unit;
+          }
         }
-      } else {
-        // Handle emissions data - check for nested "0" structure
-        if (data && data["0"] && !data.results) {
-          actualData = data["0"];
-        }
-        
-        if (!actualData || !actualData.results) {
-          return;
-        }
-
-        const results = actualData.results;
-        dataPoints = results.map(r => ({ x: r.speed, y: r.prediction }));
-        
-        // Get emission unit
-        if (actualData.unit) {
-          emissionUnitTemp = actualData.unit;
-        }
-      }
 
       // Extract vehicle type from the key (remove _Consumption or _Selected suffix)
       const vehicleType = dataKey.replace(/_Consumption$|_Selected$/, '');
@@ -369,20 +370,24 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(consumptionPayload),
                       });
-
                       if (consumptionRes.ok) {
-                        const consumptionData = await consumptionRes.json();
-                        const consumptionValue = consumptionData.fuel_consumption !== null ? 
-                          consumptionData.fuel_consumption : consumptionData.energy_consumption;
-                        
-                          console.log("Consumption data:", consumptionData);
-                        consumptionDataPoints.push({
-                          speed: speed,
-                          consumption: consumptionValue,
-                          unit: consumptionData.fuel_unit || consumptionData.energy_unit
-                        });
+                          const consumptionData = await consumptionRes.json(); // This is now an array of 70
+
+                          console.log("Consumption data:", consumptionData); // Should log once
+
+                          consumptionData.forEach(item => {
+                            const consumptionValue = item.fuel_consumption !== null 
+                              ? item.fuel_consumption 
+                              : item.energy_consumption_mwh_mile;
+
+                            consumptionDataPoints.push({
+                              speed: item.speed,
+                              consumption: consumptionValue,
+                              unit: item.fuel_unit || item.energy_unit
+                            });
+                          });
+                        }
                       }
-                    }
 
                     // Store Fuel Consumption data
                     setVehicleData(prev => ({
@@ -457,38 +462,38 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
           {/* Charts */}
           <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem' }}>
             <div style={{ width: 420, height: 320 }}>
-              <Line
-                key={`consumption-${updateCounter}`}
-                data={consumptionChartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    title: {
-                      display: true,
-                      text: `Fuel Consumption Rate (${consumptionUnit})`,
-                    },
-                  },
-                  parsing: {
-                    xAxisKey: 'x',
-                    yAxisKey: 'y'
-                  },
-                  scales: {
-                    x: {
-                      type: 'linear',
-                      title: { display: true, text: "Speed (mph)" },
-                    },
-                    y: {
-                      type: "linear",
-                      display: true,
-                      position: "left",
-                      title: { display: true, text: consumptionUnit },
-                      // Allow negative values by removing beginAtZero
-                    },
-                  },
-                }}
-              />
+                <Line
+                      key={`consumption-${updateCounter}`}
+                      data={consumptionChartData}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: { display: false },
+                          title: {
+                            display: true,
+                            text: `Fuel Consumption Rate (${consumptionUnit})`,
+                          },
+                        },
+                        parsing: {
+                          xAxisKey: 'x',
+                          yAxisKey: 'y'
+                        },
+                        scales: {
+                          x: {
+                            type: 'linear',
+                            title: { display: true, text: "Speed (mph)" },
+                          },
+                          y: {
+                            type: "linear",
+                            display: true,
+                            position: "left",
+                            title: { display: true, text: consumptionUnit },
+                            // Allow negative values by removing beginAtZero
+                          },
+                        },
+                      }}
+                    />
             </div>
             <div style={{ width: 420, height: 320 }}>
               <Line
