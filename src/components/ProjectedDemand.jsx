@@ -10,8 +10,8 @@
 
   // Send data to backend on Next
   const handleNext = async () => {
-    // Collect values
-    const city = classificationState.city || '';
+    // Collect values using mapped city name
+    const city = cityNameMapping[classificationState.city] || classificationState.cityInput || '';
   // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
   let year = penetrationState.projectedYear || classificationState.baseYear || '';
     const file = projectedDemandState.projectedTrafficVolumeFile || null;
@@ -124,8 +124,8 @@ function ProjectedDemand({ activeStep }) {
           [keyHeaders]: parsed[0],
           [keyData]: parsed.slice(1),
         });
-        // Print variable in console after upload
-        const city = classificationState.city || '';
+        // Print variable in console after upload using mapped city name
+        const city = cityNameMapping[classificationState.city] || classificationState.cityInput || '';
         // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
         let year = penetrationState.projectedYear || classificationState.baseYear || '';
         const csvString = arrayToCSV(parsed[0], parsed.slice(1));
@@ -154,10 +154,23 @@ function ProjectedDemand({ activeStep }) {
   };
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
-  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+  const cityImages = { 
+    "Atlanta": Atlanta, 
+    "Los Angeles": LosAngeles, 
+    "Seattle": Seattle, 
+    "NewYork": NewYork 
+  };
 
-  const city =
-    (classificationState.city ?? classificationState.cityInput) || "";
+  // City name mapping to handle space differences
+  const cityNameMapping = {
+    "LosAngeles": "Los Angeles",
+    "NewYork": "NewYork",
+    "Atlanta": "Atlanta",
+    "Seattle": "Seattle"
+  };
+
+  const rawCityName = classificationState.city || classificationState.cityInput;
+  const city = cityNameMapping[rawCityName] || rawCityName || "";
   const key = city.trim();
   const srcImg = trafficVolumeImages[key];
   return (
@@ -198,7 +211,7 @@ function ProjectedDemand({ activeStep }) {
           </select>
 
           <select
-            value={classificationState.cityInput}
+            value={city}
             disabled
             className="border rounded px-2 py-1 w-25"
           >
@@ -244,10 +257,10 @@ function ProjectedDemand({ activeStep }) {
         <div className="ml-4">
           <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
         </div>
-        {classificationState.city && (
+        {city && (
           <img
-            src={cityImages[classificationState.city]}
-            alt={classificationState.city}
+            src={cityImages[city]}
+            alt={city}
             className="w-full h-[500px] object-contain rounded"
           />
         )}

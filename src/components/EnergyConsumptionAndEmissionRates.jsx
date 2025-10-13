@@ -97,7 +97,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
       borderColor: "#ccc",
       backgroundColor: "rgba(0,0,0,0)",
       tension: 0.3,
-      pointRadius: 2,
+      pointRadius: 0,
     }],
   });
   const [consumptionChartData, setConsumptionChartData] = useState({
@@ -108,7 +108,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
       borderColor: "#ccc",
       backgroundColor: "rgba(0,0,0,0)",
       tension: 0.3,
-      pointRadius: 2,
+      pointRadius: 0,
     }],
   });
 
@@ -170,7 +170,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         borderColor: vehicleColorMap[vehicleType] || "#000",
         backgroundColor: "rgba(0,0,0,0)",
         tension: 0.3,
-        pointRadius: 2,
+        pointRadius: 0,
         parsing: {
           xAxisKey: 'x',
           yAxisKey: 'y'
@@ -203,7 +203,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
           borderColor: "#ccc",
           backgroundColor: "rgba(0,0,0,0)",
           tension: 0.3,
-          pointRadius: 2,
+          pointRadius: 0,
         }],
       });
     } else {
@@ -222,7 +222,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
           borderColor: "#ccc", 
           backgroundColor: "rgba(0,0,0,0)",
           tension: 0.3,
-          pointRadius: 2,
+          pointRadius: 0,
         }],
       });
     } else {
@@ -238,17 +238,20 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
   // UI lists & lookups
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
-  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+  const cityImages = { 
+    "Atlanta": Atlanta, 
+    "Los Angeles": LosAngeles, 
+    "Seattle": Seattle, 
+    "NewYork": NewYork 
+  };
 
-  const cityKeyMap = useMemo(
-    () => ({
-      Atlanta: "Atlanta",
-      "Los Angeles": "LosAngeles",
-      Seattle: "Seattle",
-      NewYork: "NewYork",
-    }),
-    []
-  );
+  // City name mapping to handle space differences
+  const cityNameMapping = {
+    "LosAngeles": "Los Angeles",
+    "NewYork": "NewYork",
+    "Atlanta": "Atlanta",
+    "Seattle": "Seattle"
+  };
 
   const steps = [
     "Vehicle Energy Consumption and Emission Rates",
@@ -262,14 +265,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   const emissionType = ConsumptionAndEmissionState.EmissionType || "";
   const vehicleAge = ConsumptionAndEmissionState.VehicleAge || "";
 
-  // Prepare chart data
-  // const energyChartData = useMemo(() => ({
-  //   labels: [],
-  //   datasets: [],
-  // }), []);
-
-  const selectedCityKey =
-    cityKeyMap[classificationState.city] || cityKeyMap[classificationState.cityInput];
+  // Fix the city key selection logic with proper mapping
+  const rawCityName = classificationState.city || classificationState.cityInput;
+  const selectedCityName = cityNameMapping[rawCityName] || rawCityName;
+  const selectedCityKey = selectedCityName;
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -324,7 +323,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
           {/* City (disabled; chosen previously) */}
           <select
-            value={classificationState.city || classificationState.cityInput}
+            value={selectedCityName}
             disabled
             className="border rounded px-2 py-1 w-40"
           >
@@ -360,7 +359,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       const consumptionPayload = {
                         fuelType,
                         vehicleAge,
-                        city: classificationState.city || classificationState.cityInput,
+                        city: selectedCityName, // Use the mapped city name
                         vehicleType,
                         speed: speed
                       };
@@ -409,7 +408,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        City: classificationState.city || classificationState.cityInput,
+                        City: selectedCityName, // Use the mapped city name
                         FuelType: fuelType,
                         VehicleType: vehicleType,
                         Age: parseInt(vehicleAge),
@@ -470,10 +469,6 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         maintainAspectRatio: false,
                         plugins: {
                           legend: { display: false },
-                          title: {
-                            display: true,
-                            text: `Fuel Consumption Rate (${consumptionUnit})`,
-                          },
                         },
                         parsing: {
                           xAxisKey: 'x',
@@ -488,7 +483,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                             type: "linear",
                             display: true,
                             position: "left",
-                            title: { display: true, text: consumptionUnit },
+                            title: { display: true, text: `Fuel Consumption Rate (${consumptionUnit})` },
                             // Allow negative values by removing beginAtZero
                           },
                         },
@@ -504,10 +499,6 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                   maintainAspectRatio: false,
                   plugins: {
                     legend: { display: false },
-                    title: {
-                      display: true,
-                      text: `${emissionType || 'Selected Emission Type'} (${emissionUnit})`,
-                    },
                   },
                   parsing: {
                     xAxisKey: 'x',
@@ -522,7 +513,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       type: "linear",
                       display: true,
                       position: "left",
-                      title: { display: true, text: emissionUnit },
+                      title: { display: true, text: `${emissionType || 'Selected Emission Type'} (${emissionUnit})` },
                       // Allow negative values by removing beginAtZero
                     },
                   },
@@ -561,7 +552,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
           {selectedCityKey && cityImages[selectedCityKey] && (
             <img
               src={cityImages[selectedCityKey]}
-              alt={classificationState.city || classificationState.cityInput}
+              alt={selectedCityName}
               className="w-full h-[500px] object-contain rounded"
             />
           )}
