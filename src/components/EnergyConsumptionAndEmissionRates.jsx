@@ -82,6 +82,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   const [consumptionUnit, setConsumptionUnit] = useState("units");
   const [emissionUnit, setEmissionUnit] = useState("units");
 
+  // Remember last requested inputs so we only refetch datasets when the relevant input changes
+  const [lastEmissionTypeRequested, setLastEmissionTypeRequested] = useState(null);
+  const [lastFuelTypeRequested, setLastFuelTypeRequested] = useState(null);
+
   // State to hold all received vehicle data
   const [vehicleData, setVehicleData] = useState({});
 
@@ -111,6 +115,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
       pointRadius: 0,
     }],
   });
+  // Emission chart axis helpers (previously computed; removed to use simple axis settings)
 
   // useEffect to update chart data when vehicleData changes
   useEffect(() => {
@@ -342,38 +347,51 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
               disabled={!fuelType || !emissionType || !vehicleAge}
               onClick={async() => {
                 try {
-                  // Clear previous data
-                  setVehicleData({});
+                  // Decide whether to fetch consumption and/or emissions this run
+                  const shouldFetchConsumption = fuelType !== lastFuelTypeRequested;
+                  const shouldFetchEmissions = emissionType !== lastEmissionTypeRequested;
+
+                  // Clear previous data but preserve datasets we are not refetching
+                  setVehicleData(prev => {
+                    const preserved = {};
+                    if (!shouldFetchConsumption && prev) {
+                      Object.entries(prev).forEach(([k, v]) => {
+                        if (k.endsWith('_Consumption')) preserved[k] = v;
+                      });
+                    }
+                    if (!shouldFetchEmissions && prev) {
+                      Object.entries(prev).forEach(([k, v]) => {
+                        if (k.endsWith('_Selected')) preserved[k] = v;
+                      });
+                    }
+                    return preserved;
+                  });
                   setUpdateCounter(0);
 
-                  // For each vehicle type, make TWO calls: one for Fuel Consumption and one for selected emission type
+                  // For each vehicle type, make conditional calls
                   for (const vehicleType of VEHICLE_TYPES) {
-                    // First call: Get Fuel Consumption data from the new endpoint for multiple speeds
-                    const speeds = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75]; // Speed range
-                    const consumptionDataPoints = [];
+                    // Fuel Consumption (left chart) - only when fuel changed
+                    if (shouldFetchConsumption) {
+                      const speeds = [25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75]; // Speed range
+                      const consumptionDataPoints = [];
+                      toast.info(`Fetching Fuel Consumption for ${vehicleType}...`);
 
-                    toast.info(`Fetching Fuel Consumption for ${vehicleType}...`);
+                      for (const speed of speeds) {
+                        const consumptionPayload = {
+                          fuelType,
+                          vehicleAge,
+                          city: selectedCityName,
+                          vehicleType,
+                          speed
+                        };
 
-                                        // Call consumption endpoint for each speed
-                    for (const speed of speeds) {
-                      const consumptionPayload = {
-                        fuelType,
-                        vehicleAge,
-                        city: selectedCityName, // Use the mapped city name
-                        vehicleType,
-                        speed: speed
-                      };
-
-                      const consumptionRes = await fetch("http://127.0.0.1:5003/predict_consumption", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(consumptionPayload),
-                      });
-                      if (consumptionRes.ok) {
-                          const consumptionData = await consumptionRes.json(); // This is now an array of 70
-
-                          console.log("Consumption data:", consumptionData); // Should log once
-
+                        const consumptionRes = await fetch("http://127.0.0.1:5003/predict_consumption", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(consumptionPayload),
+                        });
+                        if (consumptionRes.ok) {
+                          const consumptionData = await consumptionRes.json();
                           consumptionData.forEach(item => {
                             const consumptionValue = item.fuel_consumption !== null 
                               ? item.fuel_consumption 
@@ -388,62 +406,60 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         }
                       }
 
-                    // Store Fuel Consumption data
-                    setVehicleData(prev => ({
-                      ...prev,
-                      [`${vehicleType}_Consumption`]: {
-                        results: consumptionDataPoints,
-                        unit: consumptionDataPoints.length > 0 ? consumptionDataPoints[0].unit : "units",
-                        emissionType: "Fuel Consumption",
-                        selectedEmissionType: "Fuel Consumption",
-                        timestamp: Date.now()
-                      }
-                    }));
+                      setVehicleData(prev => ({
+                        ...prev,
+                        [`${vehicleType}_Consumption`]: {
+                          results: consumptionDataPoints,
+                          unit: consumptionDataPoints.length > 0 ? consumptionDataPoints[0].unit : "units",
+                          emissionType: "Fuel Consumption",
+                          selectedEmissionType: "Fuel Consumption",
+                          timestamp: Date.now()
+                        }
+                      }));
+                    }
 
-                    // Second call: Get the selected emission type from the emissions endpoint
+                    // Emissions (right chart) - only when emission type changed
+                    if (shouldFetchEmissions) {
+                      toast.info(`Fetching ${emissionType} for ${vehicleType}...`);
 
-                    toast.info(`Fetching ${emissionType} for ${vehicleType}...`);
+                      const selectedRes = await fetch("http://127.0.0.1:5003/predict_emissions", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          City: selectedCityName,
+                          FuelType: fuelType,
+                          VehicleType: vehicleType,
+                          Age: parseInt(vehicleAge),
+                          EmissionType: emissionType
+                        }),
+                      });
 
-                    const selectedRes = await fetch("http://127.0.0.1:5003/predict_emissions", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        City: selectedCityName, // Use the mapped city name
-                        FuelType: fuelType,
-                        VehicleType: vehicleType,
-                        Age: parseInt(vehicleAge),
-                        EmissionType: emissionType
-                      }),
-                    });
+                      if (!selectedRes.ok) throw new Error(`${emissionType} prediction failed for ${vehicleType}`);
 
-                    if (!selectedRes.ok) throw new Error(`${emissionType} prediction failed for ${vehicleType}`);
+                      const selectedData = await selectedRes.json();
+                      const transformedData = {
+                        results: selectedData.map(item => ({ speed: item.Speed, prediction: item.PredictedValue })),
+                        unit: selectedData[0]?.Unit || "gr/mile",
+                        prediction_type: selectedData[0]?.EmissionType || emissionType
+                      };
 
-                    const selectedData = await selectedRes.json();
+                      setVehicleData(prev => ({
+                        ...prev,
+                        [`${vehicleType}_Selected`]: {
+                          ...transformedData,
+                          emissionType: emissionType,
+                          selectedEmissionType: emissionType,
+                          timestamp: Date.now()
+                        }
+                      }));
 
-                    // Transform backend data format to expected frontend format
-                    const transformedData = {
-                      results: selectedData.map(item => ({
-                        speed: item.Speed,
-                        prediction: item.PredictedValue
-                      })),
-                      unit: selectedData[0]?.Unit || "gr/mile",
-                      prediction_type: selectedData[0]?.EmissionType || emissionType
-                    };
-
-                    // Store selected emission type data
-                    setVehicleData(prev => ({
-                      ...prev,
-                      [`${vehicleType}_Selected`]: {
-                        ...transformedData,
-                        emissionType: emissionType,
-                        selectedEmissionType: emissionType,
-                        timestamp: Date.now()
-                      }
-                    }));
-
-                    // Success toast for this vehicle type
-                    toast.success(`Predictions received for ${vehicleType}!`);
+                      toast.success(`Predictions received for ${vehicleType}!`);
+                    }
                   }
+
+                  // Update trackers
+                  if (shouldFetchConsumption) setLastFuelTypeRequested(fuelType);
+                  if (shouldFetchEmissions) setLastEmissionTypeRequested(emissionType);
 
                   toast.success("✅ All vehicle types processed successfully!");
                 } catch (err) {
@@ -457,10 +473,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         </form>
 
         {/* Two side-by-side charts as in your PDF */}
-        <div className="mt-8 flex flex-row gap-8 justify-start">
+          <div className="mt-8 flex flex-row gap-8 justify-start">
           {/* Charts */}
           <div style={{ display: 'flex', flexDirection: 'row', gap: '2rem' }}>
-            <div style={{ width: 420, height: 320 }}>
+            <div style={{ width: 420, height: 320, padding: 12, border: '1px solid rgba(0,0,0,0.45)', borderRadius: 8, background: 'rgba(255,255,255,0.88)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}>
                 <Line
                       key={`consumption-${updateCounter}`}
                       data={consumptionChartData}
@@ -490,7 +506,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                       }}
                     />
             </div>
-            <div style={{ width: 420, height: 320 }}>
+            <div style={{ width: 420, height: 320, padding: 12, border: '1px solid rgba(0,0,0,0.45)', borderRadius: 8, background: 'rgba(255,255,255,0.88)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}>
               <Line
                 key={`emission-${updateCounter}`}
                 data={emissionChartData}
@@ -508,12 +524,19 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     x: {
                       type: 'linear',
                       title: { display: true, text: "Speed (mph)" },
+                      min: 0,
+                      max: 70,
+                      ticks: {
+                        stepSize: 10
+                      },
                     },
                     y: {
                       type: "linear",
                       display: true,
                       position: "left",
                       title: { display: true, text: `${emissionType || 'Selected Emission Type'} (${emissionUnit})` },
+                      // Ensure axis starts at 0 (simple settings to mirror consumption chart)
+                      min: 0,
                       // Allow negative values by removing beginAtZero
                     },
                   },
@@ -521,7 +544,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
               />
             </div>
             {/* Shared Legend on the side */}
-            <div style={{ minWidth: 240, marginLeft: 24, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+            <div style={{ minWidth: 240, marginLeft: 24, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', padding: 12, border: '1px solid rgba(0,0,0,0.45)', borderRadius: 8, background: 'rgba(255,255,255,0.88)', boxShadow: '0 4px 12px rgba(0,0,0,0.12)' }}>
               <div style={{ fontWeight: 'bold', marginBottom: 12, fontSize: 20 }}>Vehicle Types</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {VEHICLE_TYPES.map((type, idx) => (
