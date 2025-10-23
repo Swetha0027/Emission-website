@@ -270,6 +270,26 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   const emissionType = ConsumptionAndEmissionState.EmissionType || "";
   const vehicleAge = ConsumptionAndEmissionState.VehicleAge || "";
 
+  // Dynamic label for the consumption chart Y axis: show Energy Rate when electricity selected
+  const consumptionYAxisLabel = fuelType === 'Electricity' ? 'Energy Rate' : 'Fuel Consumption Rate';
+  // Show the selected fuel type in the axis title if available, otherwise fall back to the generic label
+  const consumptionYAxisText = `${fuelType || consumptionYAxisLabel} (${consumptionUnit})`;
+
+  // If the currently selected emissionType is not allowed for the chosen fuel, clear it
+  useEffect(() => {
+    if (!emissionType) return;
+    const forbiddenForCNGAndElectric = new Set(["CO2 Emissions", "NOx"]);
+    // derive allowed labels inside effect so it is stable with dependencies
+    const allowedLabels = new Set(
+      (fuelType === 'Compressed Natural Gas - CNG' || fuelType === 'Electricity')
+        ? EMISSION_TYPES.filter(et => !forbiddenForCNGAndElectric.has(et.label)).map(e => e.label)
+        : EMISSION_TYPES.map(e => e.label)
+    );
+    if (!allowedLabels.has(emissionType)) {
+      setConsumptionAndEmissionState({ EmissionType: "" });
+    }
+  }, [fuelType, emissionType, setConsumptionAndEmissionState]);
+
   // Fix the city key selection logic with proper mapping
   const rawCityName = classificationState.city || classificationState.cityInput;
   const selectedCityName = cityNameMapping[rawCityName] || rawCityName;
@@ -303,7 +323,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
             className="border rounded px-2 py-1 w-48"
           >
             <option value="">Select Emission Type</option>
-            {EMISSION_TYPES.map((et) => (
+            {(fuelType === 'Compressed Natural Gas - CNG' || fuelType === 'Electricity'
+              ? EMISSION_TYPES.filter(et => et.label !== 'CO2 Emissions' && et.label !== 'NOx')
+              : EMISSION_TYPES
+            ).map((et) => (
               <option key={et.label} value={et.label}>{et.label}</option>
             ))}
           </select>
@@ -499,7 +522,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                             type: "linear",
                             display: true,
                             position: "left",
-                            title: { display: true, text: `Fuel Consumption Rate (${consumptionUnit})` },
+                              title: { display: true, text: consumptionYAxisText },
                             // Allow negative values by removing beginAtZero
                           },
                         },
