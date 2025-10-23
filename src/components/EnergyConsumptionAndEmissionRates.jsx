@@ -278,14 +278,15 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
   // If the currently selected emissionType is not allowed for the chosen fuel, clear it
   useEffect(() => {
     if (!emissionType) return;
-    const forbiddenForCNGAndElectric = new Set(["CO2 Emissions", "NOx"]);
+    const forbiddenForElectric = new Set(["CO2 Emissions", "NOx"]);
     // derive allowed labels inside effect so it is stable with dependencies
     const allowedLabels = new Set(
-      (fuelType === 'Compressed Natural Gas - CNG' || fuelType === 'Electricity')
-        ? EMISSION_TYPES.filter(et => !forbiddenForCNGAndElectric.has(et.label)).map(e => e.label)
+      (fuelType === 'Electricity')
+        ? EMISSION_TYPES.filter(et => !forbiddenForElectric.has(et.label)).map(e => e.label)
         : EMISSION_TYPES.map(e => e.label)
     );
-    if (!allowedLabels.has(emissionType)) {
+    // Also always disallow 'Energy Rate' in the UI (user requested it removed)
+    if (emissionType === 'Energy Rate' || !allowedLabels.has(emissionType)) {
       setConsumptionAndEmissionState({ EmissionType: "" });
     }
   }, [fuelType, emissionType, setConsumptionAndEmissionState]);
@@ -323,9 +324,9 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
             className="border rounded px-2 py-1 w-48"
           >
             <option value="">Select Emission Type</option>
-            {(fuelType === 'Compressed Natural Gas - CNG' || fuelType === 'Electricity'
-              ? EMISSION_TYPES.filter(et => et.label !== 'CO2 Emissions' && et.label !== 'NOx')
-              : EMISSION_TYPES
+            {(fuelType === 'Electricity'
+              ? EMISSION_TYPES.filter(et => et.label !== 'CO2 Emissions' && et.label !== 'NOx' && et.label !== 'Energy Rate')
+              : EMISSION_TYPES.filter(et => et.label !== 'Energy Rate')
             ).map((et) => (
               <option key={et.label} value={et.label}>{et.label}</option>
             ))}
@@ -413,20 +414,41 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify(consumptionPayload),
                         });
-                        if (consumptionRes.ok) {
-                          const consumptionData = await consumptionRes.json();
-                          consumptionData.forEach(item => {
-                            const consumptionValue = item.fuel_consumption !== null 
-                              ? item.fuel_consumption 
-                              : item.energy_consumption_mwh_mile;
-
-                            consumptionDataPoints.push({
-                              speed: item.speed,
-                              consumption: consumptionValue,
-                              unit: item.fuel_unit || item.energy_unit
-                            });
-                          });
+                        // Diagnostic: log payload being sent
+                        console.info('predict_consumption payload:', consumptionPayload);
+                        if (!consumptionRes.ok) {
+                          const bodyText = await consumptionRes.text().catch(() => null);
+                          console.error('predict_consumption failed', consumptionRes.status, consumptionRes.statusText, bodyText);
+                          throw new Error(`Consumption API error ${consumptionRes.status} ${consumptionRes.statusText} ${bodyText || ''}`);
                         }
+                        // Robust parse: some backends may return invalid JSON tokens like NaN
+                        let consumptionData;
+                        try {
+                          const txt = await consumptionRes.text();
+                          try {
+                            consumptionData = JSON.parse(txt);
+                          } catch {
+                            const sanitized = txt.replace(/\bNaN\b/g, 'null');
+                            consumptionData = JSON.parse(sanitized);
+                            console.warn('consumption response contained NaN - parsed after sanitizing');
+                          }
+                        } catch (e) {
+                          throw new Error('Failed to parse consumption response: ' + (e.message || e.toString()));
+                        }
+                        if (!Array.isArray(consumptionData)) {
+                          throw new Error('Consumption response is not an array: ' + JSON.stringify(consumptionData));
+                        }
+                        consumptionData.forEach(item => {
+                          const consumptionValue = item.fuel_consumption !== null
+                            ? item.fuel_consumption
+                            : item.energy_consumption_mwh_mile;
+
+                          consumptionDataPoints.push({
+                            speed: item.speed,
+                            consumption: consumptionValue,
+                            unit: item.fuel_unit || item.energy_unit
+                          });
+                        });
                       }
 
                       setVehicleData(prev => ({
@@ -445,21 +467,45 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     if (shouldFetchEmissions) {
                       toast.info(`Fetching ${emissionType} for ${vehicleType}...`);
 
+                      const emissionPayload = {
+                        City: selectedCityName,
+                        FuelType: fuelType,
+                        VehicleType: vehicleType,
+                        Age: parseInt(vehicleAge),
+                        EmissionType: emissionType
+                      };
+                      console.info('predict_emissions payload:', emissionPayload);
                       const selectedRes = await fetch("http://127.0.0.1:5003/predict_emissions", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          City: selectedCityName,
-                          FuelType: fuelType,
-                          VehicleType: vehicleType,
-                          Age: parseInt(vehicleAge),
-                          EmissionType: emissionType
-                        }),
+                        body: JSON.stringify(emissionPayload),
                       });
 
-                      if (!selectedRes.ok) throw new Error(`${emissionType} prediction failed for ${vehicleType}`);
+                      if (!selectedRes.ok) {
+                        const bodyText = await selectedRes.text().catch(() => null);
+                        console.error('predict_emissions failed', selectedRes.status, selectedRes.statusText, bodyText);
+                        throw new Error(`${emissionType} prediction failed for ${vehicleType}: ${selectedRes.status} ${selectedRes.statusText} ${bodyText || ''}`);
+                      }
 
-                      const selectedData = await selectedRes.json();
+                      // Robust parse: backend sometimes returns invalid JSON (e.g. NaN). Read text and try to sanitize.
+                      let selectedData;
+                      try {
+                        const txt = await selectedRes.text();
+                        try {
+                          selectedData = JSON.parse(txt);
+                        } catch {
+                          // Replace bare NaN tokens with null then parse
+                          const sanitized = txt.replace(/\bNaN\b/g, 'null');
+                          selectedData = JSON.parse(sanitized);
+                          console.warn('predict_emissions response contained NaN - parsed after sanitizing');
+                        }
+                      } catch (e) {
+                        console.error('Failed to parse predict_emissions response body', e);
+                        throw new Error(`Failed to parse emissions response: ${e.message || e.toString()}`);
+                      }
+                      if (!Array.isArray(selectedData)) {
+                        throw new Error('Emissions response is not an array: ' + JSON.stringify(selectedData));
+                      }
                       const transformedData = {
                         results: selectedData.map(item => ({ speed: item.Speed, prediction: item.PredictedValue })),
                         unit: selectedData[0]?.Unit || "gr/mile",
@@ -486,7 +532,10 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
                   toast.success("✅ All vehicle types processed successfully!");
                 } catch (err) {
-                  toast.error("Error contacting backend: " + err.message);
+                  // Log error with full details to help debug the specific failure case
+                  console.error('Predict & Plot error', err);
+                  const detail = err && (err.message || err.toString()) ? (err.message || err.toString()) : 'Unknown error';
+                  toast.error("Error contacting backend: " + detail);
                 }
               }}
             >
