@@ -249,7 +249,11 @@ function ProjectedDemand({ activeStep }) {
           />
         ) : null}
         {projectedDemandState.projectedTrafficVolumeData.length ? (
-          <HotTable
+          <div>
+          <div className="bg-[#f7f7f9] text-[#222222] text-center box-border rounded font-semibold border border-solid border-[#cccccc]">
+            <span>Projected Increase In Traffic Volumes</span>
+          </div >
+            <HotTable
             className="min-w-[60%] overflow-auto"
             style={{ minHeight: 500 }}
             data={projectedDemandState.projectedTrafficVolumeData}
@@ -264,6 +268,8 @@ function ProjectedDemand({ activeStep }) {
             renderPagination={false}
             // Remove navigation arrows by disabling pagination UI
           />
+          </div>
+
         ) : (
           <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
             No data

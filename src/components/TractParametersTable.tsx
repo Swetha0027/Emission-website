@@ -94,7 +94,8 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
 
       // Let DataGrid manage scrolling; no need to force overflow here
       sx={{
-        border: 0,
+        border: '1px solid #ccc',
+        borderRadius: 1,
         "& .MuiDataGrid-columnHeaders": {
           backgroundColor: theme === "dark" ? "#0a2f5c" : "#f5f7fb",
         },
