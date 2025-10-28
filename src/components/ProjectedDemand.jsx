@@ -228,7 +228,9 @@ function ProjectedDemand({ activeStep }) {
             <select
               value={city}
               disabled
-              className="border rounded px-2 py-1 w-25"
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 ${
+                theme === "dark" ? "border-gray-700" : "border-white"
+              }`}
             >
               <option value="">City</option>
               {statesList.slice(1).map((st) => (

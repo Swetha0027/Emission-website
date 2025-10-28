@@ -78,45 +78,36 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
   const handleBack = () => setPage((p: number) => Math.max(p - 1, 1));
 
   return allRows.length ? (
-    <Box className="min-w-[60%]">
-      <div style={{ maxHeight: 300 }}>
-        <DataGrid
-          rows={paginatedRows}
-          columns={columns}
-          getRowId={(r) => r.id}
-          disableColumnMenu
-          disableRowSelectionOnClick
-          checkboxSelection={false}
-          sx={{
-            border: 0,
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: theme === "dark" ? "#0a2f5c" : "#f5f7fb",
-            },
-            "& .MuiDataGrid-cell": {
-              color: theme === "dark" ? "#e5e7eb" : undefined,
-            },
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: theme === "dark" ? "#0f2444" : undefined,
-            },
-            // Hide built-in pagination toolbar if present
-            '& .MuiDataGrid-footerContainer': { display: 'none' },
-          }}
-        />
-      </div>
-      <Box display="flex" justifyContent="center" mt={2} gap={2}>
-        <Button variant="contained" onClick={handleBack} disabled={page === 1}>
-          Back
-        </Button>
-        <Button variant="contained" onClick={handlePaginationNext} disabled={page === pageCount}>
-          Next
-        </Button>
-      </Box>
-      <Box display="flex" justifyContent="center" mt={1}>
-        Page {page} of {pageCount}
-      </Box>
-      
-      {/* Submit button for proceeding to next step */}
-    </Box>
+    <Box
+  className="min-w-[60%]"
+  sx={{ minHeight: 0 }}                 // IMPORTANT in flex layouts
+>
+  <div style={{ height: 400, width: "100%" }}>  {/* fixed height, not maxHeight */}
+    <DataGrid
+      rows={allRows}
+      columns={columns}
+      getRowId={(r) => r.id}
+      disableColumnMenu
+      disableRowSelectionOnClick
+      checkboxSelection={false}
+      slots={{ footer: () => null }}
+
+      // Let DataGrid manage scrolling; no need to force overflow here
+      sx={{
+        border: 0,
+        "& .MuiDataGrid-columnHeaders": {
+          backgroundColor: theme === "dark" ? "#0a2f5c" : "#f5f7fb",
+        },
+        "& .MuiDataGrid-cell": {
+          color: theme === "dark" ? "#e5e7eb" : undefined,
+        },
+        "& .MuiDataGrid-row:hover": {
+          backgroundColor: theme === "dark" ? "#0f2444" : undefined,
+        },
+      }}
+    />
+  </div>
+</Box>
   ) : (
     <div className="min-w-[60%] flex items-center justify-center h-auto text-gray-500">
       No data

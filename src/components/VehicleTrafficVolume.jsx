@@ -218,7 +218,7 @@ function VehicleTrafficVolume({ activeStep }) {
             <select
               value={classificationState.cityInput}
               disabled
-              className="border rounded px-2 py-1 w-25"
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 `}
             >
               <option value="">City</option>
               {statesList.slice(1).map((st) => (

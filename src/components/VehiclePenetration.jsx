@@ -223,7 +223,7 @@ function VehiclePenetration({ activeStep }) {
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
-        <form className="flex items-center gap-4 p-4 rounded">
+        <form className="flex items-end gap-4 p-4 rounded">
           <label
             className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] ${
               theme === "dark"
@@ -314,10 +314,8 @@ function VehiclePenetration({ activeStep }) {
             <label className="text-xs font-medium text-gray-600">City</label>
             <select
               disabled
-              className={`border rounded px-2 py-1 w-25 ${
-                theme === "dark"
-                  ? "bg-[#18181b] text-white border-gray-700"
-                  : ""
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 ${
+                theme === "dark" ? "border-gray-700" : "border-white"
               }`}
             >
               <option>{classificationState.city || "City"}</option>
@@ -353,14 +351,14 @@ function VehiclePenetration({ activeStep }) {
                 theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
               }
             />
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex justify-between gap-4 mt-4">
               <button
                 className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
                 onClick={handleBack}
                 disabled={currentPage === 0}
                 type="button"
               >
-                Previous
+                <i class="bi bi-chevron-left"></i>
               </button>
               <span className="px-2 py-2 font-semibold">
                 Page {currentPage + 1} of {totalPages}
@@ -371,7 +369,7 @@ function VehiclePenetration({ activeStep }) {
                 disabled={currentPage >= totalPages - 1}
                 type="button"
               >
-                Next
+                <i class="bi bi-chevron-right"></i>
               </button>
             </div>
           </div>
