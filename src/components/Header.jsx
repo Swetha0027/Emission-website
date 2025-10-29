@@ -43,7 +43,7 @@ const Header = () => {
             theme === "dark" ? "text-white" : "text-black"
           }`}
         >
-          National Energy and Emission Modeling and Analysis Tool
+          Atlanta Energy and Emissions Modeling and Analysis Tool
         </h1>
         <Notifications />
       </div>
