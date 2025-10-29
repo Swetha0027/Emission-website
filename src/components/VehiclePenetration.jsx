@@ -32,16 +32,16 @@ function VehiclePenetration({ activeStep }) {
     "Projected Demand",
   ];
 
-
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
   // Paginated data
-  const paginatedData = penetrationState.penetrationData?.slice(
-    currentPage * rowsPerPage,
-    (currentPage + 1) * rowsPerPage
-  ) || [];
+  const paginatedData =
+    penetrationState.penetrationData?.slice(
+      currentPage * rowsPerPage,
+      (currentPage + 1) * rowsPerPage
+    ) || [];
 
   const totalPages = Math.ceil(
     (penetrationState.penetrationData?.length || 0) / rowsPerPage
@@ -65,18 +65,25 @@ function VehiclePenetration({ activeStep }) {
   // Helper to print the current values and file in the console
   const printPenetrationValues = React.useCallback(() => {
     const values = {
-      city: classificationState.city || '',
-      base_year: classificationState.baseYear || '',
-      vehicle_type: classificationState.vehicleType || '',
-      projected_year: penetrationState.projectedYear || '',
-      user_id: classificationState.userId || '',
+      city: classificationState.city || "",
+      base_year: classificationState.baseYear || "",
+      vehicle_type: classificationState.vehicleType || "",
+      projected_year: penetrationState.projectedYear || "",
+      user_id: classificationState.userId || "",
       file: penetrationState.penetrationFile || null,
     };
-    console.log('Penetration upload values:', {
+    console.log("Penetration upload values:", {
       ...values,
       file: values.file ? values.file.name : null,
     });
-  }, [classificationState.city, classificationState.baseYear, classificationState.vehicleType, classificationState.userId, penetrationState.projectedYear, penetrationState.penetrationFile]);
+  }, [
+    classificationState.city,
+    classificationState.baseYear,
+    classificationState.vehicleType,
+    classificationState.userId,
+    penetrationState.projectedYear,
+    penetrationState.penetrationFile,
+  ]);
 
   // Print values whenever file or any value changes
   React.useEffect(() => {
@@ -86,40 +93,41 @@ function VehiclePenetration({ activeStep }) {
   const handleNext = async () => {
     // Combine all values and file data into a single variable
     const values = {
-      city: classificationState.city || '',
-      base_year: classificationState.baseYear || '',
-      vehicle_type: classificationState.vehicleType || '',
-      projected_year: penetrationState.projectedYear || '',
-      user_id: classificationState.userId || '',
+      city: classificationState.city || "",
+      base_year: classificationState.baseYear || "",
+      vehicle_type: classificationState.vehicleType || "",
+      projected_year: penetrationState.projectedYear || "",
+      user_id: classificationState.userId || "",
       file: penetrationState.penetrationFile || null,
     };
 
     // Prepare FormData for backend (file upload)
     const formData = new FormData();
-    formData.append('city', values.city);
-    formData.append('base_year', values.base_year);
-    formData.append('vehicle_type', values.vehicle_type);
-    formData.append('projected_year', values.projected_year);
-    
+    formData.append("city", values.city);
+    formData.append("base_year", values.base_year);
+    formData.append("vehicle_type", values.vehicle_type);
+    formData.append("projected_year", values.projected_year);
+
     // Add transaction_id from localStorage or default
-    const storedTransactionId = localStorage.getItem('transaction_id') || 'emission-analysis-2025';
-    formData.append('transaction_id', storedTransactionId);
-    
-    if (values.user_id) formData.append('user_id', values.user_id);
-    if (values.file) formData.append('file', values.file);
+    const storedTransactionId =
+      localStorage.getItem("transaction_id") || "emission-analysis-2025";
+    formData.append("transaction_id", storedTransactionId);
+
+    if (values.user_id) formData.append("user_id", values.user_id);
+    if (values.file) formData.append("file", values.file);
 
     try {
-      const res = await fetch('http://localhost:5003/upload/penetration_rate', {
-        method: 'POST',
+      const res = await fetch("http://localhost:5003/upload/penetration_rate", {
+        method: "POST",
         body: formData,
       });
-      if (!res.ok) throw new Error('Upload failed');
+      if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      console.log('Backend response:', data);
+      console.log("Backend response:", data);
       toast.success("Data uploaded successfully!");
       // Optionally show a message or move to next page
     } catch (err) {
-      toast.error('Upload failed: ' + err.message);
+      toast.error("Upload failed: " + err.message);
     }
     // Don't change pagination here - this is for step progression
   };
@@ -128,8 +136,6 @@ function VehiclePenetration({ activeStep }) {
   React.useEffect(() => {
     setCurrentPage(0);
   }, [penetrationState.penetrationData, rowsPerPage]);
-
-  
 
   // guess "Vehicle Type" column index from headers; fallback to col 0
   const vehicleTypeColIndex = React.useMemo(() => {
@@ -217,7 +223,7 @@ function VehiclePenetration({ activeStep }) {
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
-        <form className="flex items-center gap-4 p-4 rounded">
+        <form className="flex items-end gap-4 p-4 rounded">
           <label
             className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] ${
               theme === "dark"
@@ -235,73 +241,86 @@ function VehiclePenetration({ activeStep }) {
             />
           </label>
 
-          <select
-            value={penetrationState.projectedYear}
-            onChange={(e) =>
-              setPenetrationState({ projectedYear: e.target.value })
-            }
-            className={`border rounded px-2 py-1 w-20 h-[32px] ${
-              theme === "dark" ? "bg-[#18181b] text-white border-gray-700" : ""
-            }`}
-          >
-            {classificationState.baseYear &&
-              Array.from(
-                { length: 6 },
-                (_, i) => parseInt(classificationState.baseYear, 10) + i
-              ).map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Year</label>
+            <select
+              value={penetrationState.projectedYear}
+              onChange={(e) =>
+                setPenetrationState({ projectedYear: e.target.value })
+              }
+              className={`border rounded px-2 py-1 w-20 h-[32px] ${
+                theme === "dark"
+                  ? "bg-[#18181b] text-white border-gray-700"
+                  : ""
+              }`}
+            >
+              {classificationState.baseYear &&
+                Array.from(
+                  { length: 6 },
+                  (_, i) => parseInt(classificationState.baseYear, 10) + i
+                ).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+            </select>
+          </div>
 
-          <select
-            value={classificationState.vehicleType}
-            onChange={(e) =>
-              setClassificationState({ vehicleType: e.target.value })
-            }
-            disabled={classificationState.city === ""}
-            className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-[#18181b] text-white border-gray-700"
-                : "bg-white text-black border-gray-300"
-            }`}
-          >
-            <option value="">Vehicle Type</option>
-            <option value="Combination long-haul Truck">
-              Combination long-haul Truck
-            </option>
-            <option value="Combination short-haul Truck">
-              Combination short-haul Truck
-            </option>
-            <option value="Light Commercial Truck">
-              Light Commercial Truck
-            </option>
-            <option value="Motorhome - Recreational Vehicle">
-              Motorhome - Recreational Vehicle
-            </option>
-            <option value="Motorcycle">Motorcycle</option>
-            <option value="Other Buses">Other Buses</option>
-            <option value="Passenger Truck">Passenger Truck</option>
-            <option value="Refuse Truck">Refuse Truck</option>
-            <option value="School Bus">School Bus</option>
-            <option value="Single Unit long-haul Truck">
-              Single Unit long-haul Truck
-            </option>
-            <option value="Single Unit short-haul Truck">
-              Single Unit short-haul Truck
-            </option>
-            <option value="Transit Bus">Transit Bus</option>
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Vehicle Type
+            </label>
+            <select
+              value={classificationState.vehicleType}
+              onChange={(e) =>
+                setClassificationState({ vehicleType: e.target.value })
+              }
+              disabled={classificationState.city === ""}
+              className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
+                theme === "dark"
+                  ? "bg-[#18181b] text-white border-gray-700"
+                  : "bg-white text-black border-gray-300"
+              }`}
+            >
+              <option value="">Vehicle Type</option>
+              <option value="Combination long-haul Truck">
+                Combination long-haul Truck
+              </option>
+              <option value="Combination short-haul Truck">
+                Combination short-haul Truck
+              </option>
+              <option value="Light Commercial Truck">
+                Light Commercial Truck
+              </option>
+              <option value="Motorhome - Recreational Vehicle">
+                Motorhome - Recreational Vehicle
+              </option>
+              <option value="Motorcycle">Motorcycle</option>
+              <option value="Other Buses">Other Buses</option>
+              <option value="Passenger Truck">Passenger Truck</option>
+              <option value="Refuse Truck">Refuse Truck</option>
+              <option value="School Bus">School Bus</option>
+              <option value="Single Unit long-haul Truck">
+                Single Unit long-haul Truck
+              </option>
+              <option value="Single Unit short-haul Truck">
+                Single Unit short-haul Truck
+              </option>
+              <option value="Transit Bus">Transit Bus</option>
+            </select>
+          </div>
 
-          <select
-            disabled
-            className={`border rounded px-2 py-1 w-25 ${
-              theme === "dark" ? "bg-[#18181b] text-white border-gray-700" : ""
-            }`}
-          >
-            <option>{classificationState.city || "City"}</option>
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">City</label>
+            <select
+              disabled
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 ${
+                theme === "dark" ? "border-gray-700" : "border-white"
+              }`}
+            >
+              <option>{classificationState.city || "City"}</option>
+            </select>
+          </div>
         </form>
 
         {penetrationState.penetrationData?.length > 0 ? (
@@ -332,14 +351,14 @@ function VehiclePenetration({ activeStep }) {
                 theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
               }
             />
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex justify-between gap-4 mt-4">
               <button
                 className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
                 onClick={handleBack}
                 disabled={currentPage === 0}
                 type="button"
               >
-                Previous
+                <i class="bi bi-chevron-left"></i>
               </button>
               <span className="px-2 py-2 font-semibold">
                 Page {currentPage + 1} of {totalPages}
@@ -350,7 +369,7 @@ function VehiclePenetration({ activeStep }) {
                 disabled={currentPage >= totalPages - 1}
                 type="button"
               >
-                Next
+                <i class="bi bi-chevron-right"></i>
               </button>
             </div>
           </div>
@@ -359,7 +378,6 @@ function VehiclePenetration({ activeStep }) {
             {/* placeholder table */}
           </div>
         )}
-        
       </div>
 
       <div className="flex flex-col gap-6">

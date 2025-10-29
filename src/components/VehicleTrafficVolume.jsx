@@ -21,7 +21,6 @@ import TractParametersTable from "./TractParametersTable";
 import { toast } from "react-toastify";
 registerAllModules();
 
-
 function VehicleTrafficVolume({ activeStep }) {
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
@@ -31,7 +30,8 @@ function VehicleTrafficVolume({ activeStep }) {
   // Submit data to backend
   const handleNext = async () => {
     // Collect values
-    const city = (classificationState.city ?? classificationState.cityInput) || '';
+    const city =
+      (classificationState.city ?? classificationState.cityInput) || "";
     const trafficVolumeFile = trafficState.trafficVolumeFile || null;
     const mftParametersFile = trafficState.trafficMFTParametersFile || null;
     const values = {
@@ -39,49 +39,49 @@ function VehicleTrafficVolume({ activeStep }) {
       trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
       mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
     };
-    console.log('Traffic Volume and Speed upload values (on Next):', values);
+    console.log("Traffic Volume and Speed upload values (on Next):", values);
 
     // Check if both files are selected
     if (!trafficVolumeFile || !mftParametersFile) {
-      toast.error('Please select both Traffic Volume and MFT Parameters files');
+      toast.error("Please select both Traffic Volume and MFT Parameters files");
       return;
     }
 
     // Prepare FormData for backend
     const formData = new FormData();
-    formData.append('city_name', city); // Use city_name as expected by backend
-    
+    formData.append("city_name", city); // Use city_name as expected by backend
+
     // Add transaction_id from localStorage or default
-    const storedTransactionId = localStorage.getItem('transaction_id') || 'emission-analysis-2025';
-    formData.append('transaction_id', storedTransactionId);
-    
-    formData.append('file1', trafficVolumeFile);
-    formData.append('file2', mftParametersFile);
+    const storedTransactionId =
+      localStorage.getItem("transaction_id") || "emission-analysis-2025";
+    formData.append("transaction_id", storedTransactionId);
+
+    formData.append("file1", trafficVolumeFile);
+    formData.append("file2", mftParametersFile);
 
     try {
-      console.log('Uploading to /upload/traffic_volume...');
-      const res = await fetch('http://localhost:5003/upload/traffic_volume', {
-        method: 'POST',
+      console.log("Uploading to /upload/traffic_volume...");
+      const res = await fetch("http://localhost:5003/upload/traffic_volume", {
+        method: "POST",
         body: formData,
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Upload failed');
+        throw new Error(errorData.error || "Upload failed");
       }
-      
+
       const data = await res.json();
-      console.log('Backend response:', data);
+      console.log("Backend response:", data);
       toast.success("Traffic data uploaded successfully!");
-      
+
       // Store transaction_id for later use
       if (data.transaction_id) {
-        localStorage.setItem('transaction_id', data.transaction_id);
+        localStorage.setItem("transaction_id", data.transaction_id);
       }
-      
     } catch (err) {
-      console.error('Upload error:', err);
-      toast.error('Upload failed: ' + err.message);
+      console.error("Upload error:", err);
+      toast.error("Upload failed: " + err.message);
     }
   };
 
@@ -116,7 +116,12 @@ function VehicleTrafficVolume({ activeStep }) {
             trafficVolumeData: parsed.slice(1),
             trafficVolumeFile: file,
           });
-        else setTrafficState({ trafficVolumeHeaders: [], trafficVolumeData: [], trafficVolumeFile: file });
+        else
+          setTrafficState({
+            trafficVolumeHeaders: [],
+            trafficVolumeData: [],
+            trafficVolumeFile: file,
+          });
       } else if (type === "mftParameters") {
         if (parsed.length)
           setTrafficState({
@@ -124,18 +129,29 @@ function VehicleTrafficVolume({ activeStep }) {
             trafficMFTParametersData: parsed.slice(1),
             trafficMFTParametersFile: file,
           });
-        else setTrafficState({ trafficMFTParametersHeaders: [], trafficMFTParametersData: [], trafficMFTParametersFile: file });
+        else
+          setTrafficState({
+            trafficMFTParametersHeaders: [],
+            trafficMFTParametersData: [],
+            trafficMFTParametersFile: file,
+          });
       }
       // Print variable in console after upload
-      const city = (classificationState.city ?? classificationState.cityInput) || '';
-      const trafficVolumeFile = type === 'trafficVolume' ? file : trafficState.trafficVolumeFile;
-      const mftParametersFile = type === 'mftParameters' ? file : trafficState.trafficMFTParametersFile;
+      const city =
+        (classificationState.city ?? classificationState.cityInput) || "";
+      const trafficVolumeFile =
+        type === "trafficVolume" ? file : trafficState.trafficVolumeFile;
+      const mftParametersFile =
+        type === "mftParameters" ? file : trafficState.trafficMFTParametersFile;
       const values = {
         city,
         trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
         mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
       };
-      console.log('Traffic Volume and Speed upload values (after upload):', values);
+      console.log(
+        "Traffic Volume and Speed upload values (after upload):",
+        values
+      );
     };
     file.name.endsWith(".csv")
       ? reader.readAsText(file)
@@ -167,8 +183,11 @@ function VehicleTrafficVolume({ activeStep }) {
   const key = city.trim();
   const srcImg = trafficVolumeImages[key];
 
-  const hasTrafficVolumeData = trafficState.trafficVolumeData && trafficState.trafficVolumeData.length > 0;
-  const hasMFTParametersData = trafficState.trafficMFTParametersData && trafficState.trafficMFTParametersData.length > 0;
+  const hasTrafficVolumeData =
+    trafficState.trafficVolumeData && trafficState.trafficVolumeData.length > 0;
+  const hasMFTParametersData =
+    trafficState.trafficMFTParametersData &&
+    trafficState.trafficMFTParametersData.length > 0;
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -180,9 +199,7 @@ function VehicleTrafficVolume({ activeStep }) {
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
-              onChange={(e) =>
-                loadSheet(e.target.files[0], "trafficVolume")
-              }
+              onChange={(e) => loadSheet(e.target.files[0], "trafficVolume")}
               className="hidden"
             />
           </label>
@@ -192,26 +209,27 @@ function VehicleTrafficVolume({ activeStep }) {
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
-              onChange={(e) =>
-                loadSheet(e.target.files[0], "mftParameters")
-              }
+              onChange={(e) => loadSheet(e.target.files[0], "mftParameters")}
               className="hidden"
             />
           </label>
-          <select
-            value={classificationState.cityInput}
-            disabled
-            className="border rounded px-2 py-1 w-25"
-          >
-            <option value="">City</option>
-            {statesList.slice(1).map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">City</label>
+            <select
+              value={classificationState.cityInput}
+              disabled
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 `}
+            >
+              <option value="">City</option>
+              {statesList.slice(1).map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
         </form>
-        
+
         {/* Submit button for uploading traffic data */}
         {(hasTrafficVolumeData || hasMFTParametersData) && (
           <>

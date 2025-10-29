@@ -1,5 +1,5 @@
 // Vite: import all R2 images from assets/ResultsOne
-const modules = import.meta.glob("../assets/ResultsTwo/*_R2.{png,jpg,jpeg}", {
+const modules = import.meta.glob("../assets/ResultsTwo/*_R2.{svg,jpg,jpeg}", {
   eager: true,
   import: "default",
 });
@@ -56,9 +56,9 @@ const EMISSION_MAP = {};
 const FUEL_MAP = {};
 
 for (const [path, url] of Object.entries(modules)) {
-  const file = path.split("/").pop();                  // e.g., "CO2_Los_Angeles_R2.png"
+  const file = path.split("/").pop();                  // e.g., "CO2_Los_Angeles_R2.svg"
   if (!file) continue;
-  const base = file.replace(/\.(png|jpe?g)$/i, "");    // strip extension
+  const base = file.replace(/\.(svg|jpe?g)$/i, "");    // strip extension
 
   // Expect "<Token>_<City>_R1"
   const m = base.match(/^(.+)_([^_]+(?:_[^_]+)*)_R2$/);
@@ -95,13 +95,13 @@ export function getR2FuelImgUrl(fuelType, cityName) {
 
 export function buildR2FileNameFromEmission(emissionType, cityName, url) {
   const base = emissionKey(emissionType, cityName);
-  const ext = (url && (url.match(/\.(png|jpe?g)(\?.*)?$/i)?.[1] || "png")) || "png";
+  const ext = (url && (url.match(/\.(svg|jpe?g)(\?.*)?$/i)?.[1] || "svg")) || "svg";
   return `${base}.${ext.toLowerCase()}`;
 }
 
 export function buildR2FileNameFromFuel(fuelType, cityName, url) {
   const base = fuelKey(fuelType, cityName);
-  const ext = (url && (url.match(/\.(png|jpe?g)(\?.*)?$/i)?.[1] || "png")) || "png";
+  const ext = (url && (url.match(/\.(svg|jpe?g)(\?.*)?$/i)?.[1] || "svg")) || "svg";
   return `${base}.${ext.toLowerCase()}`;
 }
 

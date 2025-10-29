@@ -4,8 +4,11 @@ import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
-import AnalysisImage from "./AnalysisImage"
-import { getAnalysisImgUrl, buildAnalysisFileName } from "../utils/analysisAssets";
+import AnalysisImage from "./AnalysisImage";
+import {
+  getAnalysisImgUrl,
+  buildAnalysisFileName,
+} from "../utils/analysisAssets";
 
 import {
   Card,
@@ -95,7 +98,7 @@ const GridEmissionRates = ({ activeStep }) => {
     a.remove();
 
     toast.success("Download started");
-};
+  };
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
@@ -122,44 +125,61 @@ const GridEmissionRates = ({ activeStep }) => {
           </CardContent>
         </Card>
         <form className="flex items-end gap-4 p-4 rounded">
-          <select
-            value={GridEmissionState.EmissionType}
-            onChange={(e) =>
-              setGridEmissionState({
-                EmissionType: e.target.value,
-              })
-            }
-            className="border rounded px-2 py-1 w-56"
-          >
-            <option value="">Select Grid Emission Type</option>
-            <option value="CO2">CO2</option>
-            <option value="N2O">N2O</option>
-            <option value="CH4">CH4</option>
-          </select>
-          <select
-            value={classificationState.cityInput}
-            disabled
-            className="border rounded px-2 py-1 w-32"
-          >
-            <option value="">City</option>
-            {statesList.slice(1).map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Grid Emission Type
+            </label>
+
+            <select
+              value={GridEmissionState.EmissionType}
+              onChange={(e) =>
+                setGridEmissionState({
+                  EmissionType: e.target.value,
+                })
+              }
+              className="border rounded px-2 py-1 w-56"
+            >
+              <option value="">Select Grid Emission Type</option>
+              <option value="CO2">CO2</option>
+              <option value="N2O">N2O</option>
+              <option value="CH4">CH4</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">City</label>
+            <select
+              value={classificationState.cityInput}
+              disabled
+              className="border rounded px-2 py-1 w-32"
+            >
+              <option value="">City</option>
+              {statesList.slice(1).map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
         </form>
         {classificationState.cityInput && GridEmissionState.EmissionType && (
           <AnalysisImage
             emissionType={GridEmissionState.EmissionType}
             city={classificationState.cityInput}
             className="max-w-[900px] w-full h-auto object-contain rounded self-start"
-            fallback={<div className="text-sm text-red-600">Image not found</div>}
+            fallback={
+              <div className="text-sm text-red-600">Image not found</div>
+            }
           />
         )}
 
         <div>
-          <Button variant="contained" onClick={onDownload} disabled={!GridEmissionState.EmissionType || !classificationState.cityInput}>
+          <Button
+            variant="contained"
+            onClick={onDownload}
+            disabled={
+              !GridEmissionState.EmissionType || !classificationState.cityInput
+            }
+          >
             Download
           </Button>
         </div>

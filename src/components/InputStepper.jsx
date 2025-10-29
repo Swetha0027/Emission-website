@@ -115,23 +115,34 @@ function InputStepper({ finalNext }) {
         if (!res.ok) throw new Error("Failed to save table");
         const data = await res.json();
         console.log("Table saved:", data);
-          if (data.transaction_id && data.transaction_id !== "none") {
-                localStorage.setItem("transaction_id", data.transaction_id);
-                console.log("Transaction ID stored:", data.transaction_id);
-                setClassificationState({ transactionId: data.transaction_id });
-              } else {
-                console.warn("Transaction ID is missing or invalid:", data.transaction_id);
-                toast.error("Transaction ID not received from backend. Please try again.");
-              }
+        if (data.transaction_id && data.transaction_id !== "none") {
+          localStorage.setItem("transaction_id", data.transaction_id);
+          console.log("Transaction ID stored:", data.transaction_id);
+          setClassificationState({ transactionId: data.transaction_id });
+        } else {
+          console.warn(
+            "Transaction ID is missing or invalid:",
+            data.transaction_id
+          );
+          toast.error(
+            "Transaction ID not received from backend. Please try again."
+          );
+        }
         lastSentDataRef.current = formData;
         toast.success("Data uploaded successfully");
       } catch (err) {
         // Mock successful response for development - suppress console errors
-        console.log("Backend not available - using mock response for development");
+        console.log(
+          "Backend not available - using mock response for development"
+        );
         toast.success("Data uploaded successfully (mocked)");
         lastSentDataRef.current = formData;
       }
-    } else if (currentStep && currentStep.state && currentStep.state[currentStep.fileKey]) {
+    } else if (
+      currentStep &&
+      currentStep.state &&
+      currentStep.state[currentStep.fileKey]
+    ) {
       // For other steps, keep the original logic
       const formData = new FormData();
       Object.entries(currentStep.extraFields).forEach(([key, value]) => {
@@ -187,7 +198,7 @@ function InputStepper({ finalNext }) {
       </div>
 
       {/* Navigation Buttons */}
-      <Stack direction="row" spacing={2}>
+      <div className="flex justify-between w-full pl-6 pr-6">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           onClick={handleBack}
@@ -211,7 +222,7 @@ function InputStepper({ finalNext }) {
             Go to Analysis
           </button>
         )}
-      </Stack>
+      </div>
     </div>
   );
 }

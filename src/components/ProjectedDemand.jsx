@@ -1,63 +1,69 @@
-  // Helper to convert table data to CSV string
-  function arrayToCSV(headers, rows) {
-    const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
-    const csvRows = [headers.map(escape).join(",")];
-    for (const row of rows) {
-      csvRows.push(row.map(escape).join(","));
-    }
-    return csvRows.join("\n");
+// Helper to convert table data to CSV string
+function arrayToCSV(headers, rows) {
+  const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  const csvRows = [headers.map(escape).join(",")];
+  for (const row of rows) {
+    csvRows.push(row.map(escape).join(","));
   }
+  return csvRows.join("\n");
+}
 
-  // Send data to backend on Next
-  const handleNext = async () => {
-    // Collect values using mapped city name
-    const city = cityNameMapping[classificationState.city] || classificationState.cityInput || '';
+// Send data to backend on Next
+const handleNext = async () => {
+  // Collect values using mapped city name
+  const city =
+    cityNameMapping[classificationState.city] ||
+    classificationState.cityInput ||
+    "";
   // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
-  let year = penetrationState.projectedYear || classificationState.baseYear || '';
-    const file = projectedDemandState.projectedTrafficVolumeFile || null;
-    const headers = projectedDemandState.projectedTrafficVolumeHeaders || [];
-    const data = projectedDemandState.projectedTrafficVolumeData || [];
-    // Convert table to CSV string
-    const csvString = headers.length && data.length ? arrayToCSV(headers, data) : '';
-    // Store all in a variable
-    const values = {
-      city,
-      year,
-      file,
-      csv: csvString,
-    };
-    // Print in console
-    console.log('Projected Demand upload values:', {
-      ...values,
-      file: file ? file.name : null,
-    });
-
-    // Prepare FormData for backend
-    const formData = new FormData();
-    formData.append('city_name', city);
-    formData.append('year', year);
-    
-    // Add transaction_id from localStorage or default
-    const storedTransactionId = localStorage.getItem('transaction_id') || 'emission-analysis-2025';
-    formData.append('transaction_id', storedTransactionId);
-    
-    if (file) formData.append('file_csv', file);
-    if (csvString) formData.append('file_table', csvString);
-
-    try {
-      const res = await fetch('http://localhost:5003/upload/projected_traffic', {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      const respData = await res.json();
-      console.log('Backend response:', respData);
-      toast.success("Data uploaded successfully!");
-    } catch (err) {
-      toast.error('Upload failed: ' + err.message);
-    }
-    // Optionally move to next page here
+  let year =
+    penetrationState.projectedYear || classificationState.baseYear || "";
+  const file = projectedDemandState.projectedTrafficVolumeFile || null;
+  const headers = projectedDemandState.projectedTrafficVolumeHeaders || [];
+  const data = projectedDemandState.projectedTrafficVolumeData || [];
+  // Convert table to CSV string
+  const csvString =
+    headers.length && data.length ? arrayToCSV(headers, data) : "";
+  // Store all in a variable
+  const values = {
+    city,
+    year,
+    file,
+    csv: csvString,
   };
+  // Print in console
+  console.log("Projected Demand upload values:", {
+    ...values,
+    file: file ? file.name : null,
+  });
+
+  // Prepare FormData for backend
+  const formData = new FormData();
+  formData.append("city_name", city);
+  formData.append("year", year);
+
+  // Add transaction_id from localStorage or default
+  const storedTransactionId =
+    localStorage.getItem("transaction_id") || "emission-analysis-2025";
+  formData.append("transaction_id", storedTransactionId);
+
+  if (file) formData.append("file_csv", file);
+  if (csvString) formData.append("file_table", csvString);
+
+  try {
+    const res = await fetch("http://localhost:5003/upload/projected_traffic", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Upload failed");
+    const respData = await res.json();
+    console.log("Backend response:", respData);
+    toast.success("Data uploaded successfully!");
+  } catch (err) {
+    toast.error("Upload failed: " + err.message);
+  }
+  // Optionally move to next page here
+};
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -94,7 +100,7 @@ function ProjectedDemand({ activeStep }) {
     Seattle: SeattleTF,
     NewYork: NewYorkTF,
   };
-    const verticalSteps = [
+  const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
     "Traffic Volume and Speed",
@@ -125,9 +131,13 @@ function ProjectedDemand({ activeStep }) {
           [keyData]: parsed.slice(1),
         });
         // Print variable in console after upload using mapped city name
-        const city = cityNameMapping[classificationState.city] || classificationState.cityInput || '';
+        const city =
+          cityNameMapping[classificationState.city] ||
+          classificationState.cityInput ||
+          "";
         // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
-        let year = penetrationState.projectedYear || classificationState.baseYear || '';
+        let year =
+          penetrationState.projectedYear || classificationState.baseYear || "";
         const csvString = arrayToCSV(parsed[0], parsed.slice(1));
         const values = {
           city,
@@ -135,7 +145,7 @@ function ProjectedDemand({ activeStep }) {
           file,
           csv: csvString,
         };
-        console.log('Projected Demand upload values (after upload):', {
+        console.log("Projected Demand upload values (after upload):", {
           ...values,
           file: file ? file.name : null,
         });
@@ -154,19 +164,19 @@ function ProjectedDemand({ activeStep }) {
   };
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
-  const cityImages = { 
-    "Atlanta": Atlanta, 
-    "Los Angeles": LosAngeles, 
-    "Seattle": Seattle, 
-    "NewYork": NewYork 
+  const cityImages = {
+    Atlanta: Atlanta,
+    "Los Angeles": LosAngeles,
+    Seattle: Seattle,
+    NewYork: NewYork,
   };
 
   // City name mapping to handle space differences
   const cityNameMapping = {
-    "LosAngeles": "Los Angeles",
-    "NewYork": "NewYork",
-    "Atlanta": "Atlanta",
-    "Seattle": "Seattle"
+    LosAngeles: "Los Angeles",
+    NewYork: "NewYork",
+    Atlanta: "Atlanta",
+    Seattle: "Seattle",
   };
 
   const rawCityName = classificationState.city || classificationState.cityInput;
@@ -194,34 +204,42 @@ function ProjectedDemand({ activeStep }) {
             />
           </label>
 
-          <select
-            value={penetrationState.projectedYear}
-            disabled
-            className="border rounded px-2 py-1 w-20 h-[32px]"
-          >
-            {classificationState.baseYear &&
-              Array.from(
-                { length: 6 },
-                (_, i) => parseInt(classificationState.baseYear) + i
-              ).map((year) => (
-                <option key={year} value={year}>
-                  {year}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Year</label>
+            <select
+              value={penetrationState.projectedYear}
+              disabled
+              className="border rounded px-2 py-1 w-20 h-[32px]"
+            >
+              {classificationState.baseYear &&
+                Array.from(
+                  { length: 6 },
+                  (_, i) => parseInt(classificationState.baseYear) + i
+                ).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">City</label>
+            <select
+              value={city}
+              disabled
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 ${
+                theme === "dark" ? "border-gray-700" : "border-white"
+              }`}
+            >
+              <option value="">City</option>
+              {statesList.slice(1).map((st) => (
+                <option key={st} value={st}>
+                  {st}
                 </option>
               ))}
-          </select>
-
-          <select
-            value={city}
-            disabled
-            className="border rounded px-2 py-1 w-25"
-          >
-            <option value="">City</option>
-            {statesList.slice(1).map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
-            ))}
-          </select>
+            </select>
+          </div>
         </form>
         {srcImg ? (
           <img
@@ -231,7 +249,11 @@ function ProjectedDemand({ activeStep }) {
           />
         ) : null}
         {projectedDemandState.projectedTrafficVolumeData.length ? (
-          <HotTable
+          <div>
+          <div className="bg-[#f7f7f9] text-[#222222] text-center box-border rounded font-semibold border border-solid border-[#cccccc]">
+            <span>Projected Increase In Traffic Volumes</span>
+          </div >
+            <HotTable
             className="min-w-[60%] overflow-auto"
             style={{ minHeight: 500 }}
             data={projectedDemandState.projectedTrafficVolumeData}
@@ -246,6 +268,8 @@ function ProjectedDemand({ activeStep }) {
             renderPagination={false}
             // Remove navigation arrows by disabling pagination UI
           />
+          </div>
+
         ) : (
           <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
             No data

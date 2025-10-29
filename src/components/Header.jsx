@@ -3,6 +3,7 @@ import Notifications from "./Notifications";
 import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import { IconButton } from "@mui/material";
+import headerBg from "../assets/headerBg.jpeg";
 import useAppStore from "../useAppStore";
 
 const Header = () => {
@@ -16,8 +17,12 @@ const Header = () => {
       }`}
       style={{
         borderBottom: "1px solid #ccc",
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15)), url(${headerBg})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        // optional: stronger overlay when dark
+        filter: theme === "dark" ? "saturate(0.9)" : undefined,
       }}
     >
       <Link to={"/"} reloadDocument>

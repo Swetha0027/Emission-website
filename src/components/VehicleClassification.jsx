@@ -42,11 +42,14 @@ function VehicleClassification({ activeStep }) {
     };
 
     try {
-      const res = await fetch("http://localhost:5003/upload/vehicle_classification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        "http://localhost:5003/upload/vehicle_classification",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!res.ok) throw new Error("Upload failed");
 
@@ -59,8 +62,13 @@ function VehicleClassification({ activeStep }) {
         console.log("Transaction ID stored:", data.transaction_id);
         setClassificationState({ transactionId: data.transaction_id });
       } else {
-        console.warn("Transaction ID is missing or invalid:", data.transaction_id);
-        toast.error("Transaction ID not received from backend. Please try again.");
+        console.warn(
+          "Transaction ID is missing or invalid:",
+          data.transaction_id
+        );
+        toast.error(
+          "Transaction ID not received from backend. Please try again."
+        );
       }
 
       toast.success("Data uploaded successfully!");
@@ -123,7 +131,11 @@ function VehicleClassification({ activeStep }) {
         if (prevRows && prevRows.length > 0) {
           isNewData = JSON.stringify(prevRows) !== JSON.stringify(rows);
         }
-        console.log(isNewData ? "New data uploaded." : "Existing data uploaded (no change).");
+        console.log(
+          isNewData
+            ? "New data uploaded."
+            : "Existing data uploaded (no change)."
+        );
 
         setClassificationState({
           ...classificationState,
@@ -150,7 +162,9 @@ function VehicleClassification({ activeStep }) {
         <form className="flex items-end gap-4 p-4 rounded transition-colors duration-300">
           <label
             className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] transition-colors duration-300 ${
-              theme === "dark" ? "bg-blue-900 text-white" : "bg-blue-400 text-white"
+              theme === "dark"
+                ? "bg-blue-900 text-white"
+                : "bg-blue-400 text-white"
             }`}
           >
             <span className="mr-2">Upload</span> Vehicle Classification
@@ -166,9 +180,14 @@ function VehicleClassification({ activeStep }) {
 
           {/* Base Year */}
           <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Base Year
+            </label>
             <select
               value={classificationState.baseYear}
-              onChange={(e) => setClassificationState({ baseYear: e.target.value })}
+              onChange={(e) =>
+                setClassificationState({ baseYear: e.target.value })
+              }
               className={`border rounded px-2 py-1 w-20 h-[32px] transition-colors duration-300 ${
                 theme === "dark"
                   ? "bg-[#18181b] text-white border-gray-700"
@@ -188,63 +207,87 @@ function VehicleClassification({ activeStep }) {
               <option value="2028">2028</option>
               <option value="2029">2029</option>
               <option value="2030">2030</option>
-
             </select>
           </div>
 
           {/* Vehicle Type */}
-          <select
-            value={classificationState.vehicleType}
-            onChange={(e) => setClassificationState({ vehicleType: e.target.value })}
-            disabled={classificationState.city === ""}
-            className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-[#18181b] text-white border-gray-700"
-                : "bg-white text-black border-gray-300"
-            }`}
-          >
-            <option value="">Vehicle Type</option>
-            <option value="Combination long-haul Truck">Combination long-haul Truck</option>
-            <option value="Combination short-haul Truck">Combination short-haul Truck</option>
-            <option value="Light Commercial Truck">Light Commercial Truck</option>
-            <option value="Motorhome - Recreational Vehicle">Motorhome - Recreational Vehicle</option>
-            <option value="Motorcycle">Motorcycle</option>
-            <option value="Other Buses">Other Buses</option>
-            <option value="Passenger Truck">Passenger Truck</option>
-            <option value="Refuse Truck">Refuse Truck</option>
-            <option value="School Bus">School Bus</option>
-            <option value="Single Unit long-haul Truck">Single Unit long-haul Truck</option>
-            <option value="Single Unit short-haul Truck">Single Unit short-haul Truck</option>
-            <option value="Transit Bus">Transit Bus</option>
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Vehicle Type
+            </label>
+            <select
+              value={classificationState.vehicleType}
+              onChange={(e) =>
+                setClassificationState({ vehicleType: e.target.value })
+              }
+              disabled={classificationState.city === ""}
+              className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
+                theme === "dark"
+                  ? "bg-[#18181b] text-white border-gray-700"
+                  : "bg-white text-black border-gray-300"
+              }`}
+            >
+              <option value="">Vehicle Type</option>
+              <option value="Combination long-haul Truck">
+                Combination long-haul Truck
+              </option>
+              <option value="Combination short-haul Truck">
+                Combination short-haul Truck
+              </option>
+              <option value="Light Commercial Truck">
+                Light Commercial Truck
+              </option>
+              <option value="Motorhome - Recreational Vehicle">
+                Motorhome - Recreational Vehicle
+              </option>
+              <option value="Motorcycle">Motorcycle</option>
+              <option value="Other Buses">Other Buses</option>
+              <option value="Passenger Truck">Passenger Truck</option>
+              <option value="Refuse Truck">Refuse Truck</option>
+              <option value="School Bus">School Bus</option>
+              <option value="Single Unit long-haul Truck">
+                Single Unit long-haul Truck
+              </option>
+              <option value="Single Unit short-haul Truck">
+                Single Unit short-haul Truck
+              </option>
+              <option value="Transit Bus">Transit Bus</option>
+            </select>
+          </div>
 
           {/* City */}
-          <select
-            value={classificationState.cityInput}
-            onChange={(e) =>
-              setClassificationState({
-                cityInput: e.target.value,
-                city: e.target.value.replace(/\s+/g, ""),
-              })
-            }
-            className={`border rounded px-2 py-1 w-25 transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-[#18181b] text-white border-gray-700"
-                : "bg-white text-black border-gray-300"
-            }`}
-          >
-            <option value="">City</option>
-            {statesList.slice(1).map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">City</label>
+            <select
+              value={classificationState.cityInput}
+              onChange={(e) =>
+                setClassificationState({
+                  cityInput: e.target.value,
+                  city: e.target.value.replace(/\s+/g, ""),
+                })
+              }
+              className={`border rounded px-2 py-1 w-25 transition-colors duration-300 ${
+                theme === "dark"
+                  ? "bg-[#18181b] text-white border-gray-700"
+                  : "bg-white text-black border-gray-300"
+              }`}
+            >
+              <option value="">City</option>
+              {statesList.slice(1).map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+          </div>
         </form>
 
         {/* Handsontable */}
         {classificationState.classificationData?.length > 0 ? (
-          <div className="flex-1 min-w-[60%] overflow-auto" style={{ minHeight: "500px" }}>
+          <div
+            className="flex-1 min-w-[60%] overflow-auto"
+            style={{ minHeight: "500px" }}
+          >
             <HotTable
               data={classificationState.classificationData}
               colHeaders={classificationState.classificationHeaders}
@@ -253,11 +296,15 @@ function VehicleClassification({ activeStep }) {
               height="100%"
               width="100%"
               licenseKey="non-commercial-and-evaluation"
-              themeName={theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"}
+              themeName={
+                theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+              }
             />
           </div>
         ) : (
-          <div className="flex-1 min-w-[60%] overflow-auto">{/* placeholder */}</div>
+          <div className="flex-1 min-w-[60%] overflow-auto">
+            {/* placeholder */}
+          </div>
         )}
       </div>
 
